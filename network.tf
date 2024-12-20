@@ -74,7 +74,7 @@ module "subnet_worker_1" {
     aws = aws.region-worker
   }
   az                = element(module.available_worker.names,0)
-  cidr_block_subnet = var.cidr_block_master_subnet_1
+  cidr_block_subnet = var.cidr_block_worker_subnet_1
   vpc_id            = module.vpc_worker.id_vpc
   tag               = "subnet_worker_1"
 }
@@ -87,7 +87,7 @@ module "apsoutheast1-apsoutheast2" {
   id_vpc_master = module.vpc_master.id_vpc
   id_vpc_worker = module.vpc_worker.id_vpc
   region-worker = var.region-worker
-  depends_on    = [module.vpc_worker, module.available_worker]
+  depends_on    = [module.vpc_worker, module.vpc_master]
 }
 module "accept_peering" {
   source = "./modules/aws_vpc_peering_connection_accepter"

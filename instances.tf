@@ -40,7 +40,7 @@ module "master-control-plane" {
   subnet_id_1   = module.subnet_master_1.id
   sg_id         = module.sg-instances-master.id
   tag           = "master_control_plane_tf"
-  depends_on    = [module.set-master-default-router-associate , module.subnet_master_1]
+  depends_on    = [module.set-master-default-router-associate , module.subnet_master_1 , module.sg-instances-master]
   ansible_playbook_path     = "ansible_templates/install_plugins.yaml"
   region        = var.region-master
   profile       = var.profile
@@ -56,7 +56,7 @@ module "worker" {
   subnet_id_1   = module.subnet_worker_1.id
   sg_id         = module.sg-instances-worker.id
   tag           = "worker_tf"
-  depends_on    = [module.set-worker-default-router-associate , module.subnet_worker_1]
+  depends_on    = [module.set-worker-default-router-associate , module.subnet_worker_1 , module.sg-instances-worker]
   ansible_playbook_path    = "ansible_templates/install_worker.yaml"
   region        = var.region-master
   profile       = var.profile

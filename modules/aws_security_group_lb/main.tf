@@ -23,3 +23,11 @@ resource "aws_security_group" "lb-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+resource "aws_security_group_rule" "allow_sg_lb" {
+  type                     = "ingress"
+  from_port                = 8080
+  to_port                  = 8080
+  protocol                 = "tcp"
+  security_group_id        = var.master_sg_id
+  source_security_group_id = aws_security_group.lb-sg.id
+}

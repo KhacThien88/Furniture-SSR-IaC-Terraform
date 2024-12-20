@@ -4,7 +4,7 @@ variable "vpc_id" {
 variable "external_ip" {
   type = string
 }
-variable "sg-lb-id" {
+variable "sg_lb_id" {
   type = string
 }
 variable "subnet_1" {

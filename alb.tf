@@ -4,8 +4,8 @@ module "lb" {
     aws = aws.region-master
   }
   lb-sg-id = module.sg-instances-lb.id
-  subnet_master_1_id = var.cidr_block_master_subnet_1
-  subnet_master_2_id = var.cidr_block_master_subnet_2
+  subnet_master_1_id = module.subnet_master_1.id
+  subnet_master_2_id = module.subnet_master_2.id
 }
 module "lb-target-groups" {
   source = "./modules/aws_lb_target_group"

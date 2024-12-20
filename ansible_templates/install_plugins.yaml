@@ -11,7 +11,3 @@
         package:
           - wget
           - git
-    - name: clone kubespray
-      git:
-        repo: git clone https://github.com/kubernetes-sigs/kubespray.git
-        dest: /root/kubespray

@@ -11,14 +11,12 @@ module "sg-instances-master" {
   depends_on = [ module.vpc_master ]
 }
 module "sg-instances-worker" {
-  source = "./modules/aws_security_group_instance"
+  source = "./modules/aws_sg_worker"
   providers = {
     aws = aws.region-worker
   }
   external_ip = var.external_ip
-  sg_lb_id    = module.sg-instances-lb.id
-  vpc_id      = module.vpc_worker.id_vpc
-  subnet_1    = var.cidr_block_master_subnet_1
+  vpc_worker_id = module.vpc_worker.id_vpc
   depends_on = [ module.vpc_worker ]
 }
 module "sg-instances-lb" {

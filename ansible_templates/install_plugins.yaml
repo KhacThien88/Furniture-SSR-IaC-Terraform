@@ -3,16 +3,6 @@
   remote_user: ec2-user
   become_user: root
   tasks:
-    - name: Install Python 3
-      yum:
-        name: python3
-        state: present
-
-    - name: Set Python 3 as the default interpreter
-      command: alternatives --set python /usr/bin/python3
-      args:
-        creates: /usr/bin/python
-
     - name: Install dependencies
       yum:
         name: "{{ package }}"

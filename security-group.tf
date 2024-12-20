@@ -24,7 +24,7 @@ module "sg-instances-worker" {
   }
   external_ip = var.external_ip
   sg-lb-id    = module.sg-instances-lb.id
-  vpc_id      = module.vpc_master.id_vpc
+  vpc_id      = module.vpc_worker.id_vpc
   subnet_1    = var.cidr_block_master_subnet_1
   depends_on = [ module.vpc_worker ]
 }

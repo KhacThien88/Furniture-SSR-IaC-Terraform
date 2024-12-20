@@ -45,7 +45,7 @@ module "sg-instances-master" {
   sg-lb-id    = module.sg-instances-lb.id
   vpc_id      = module.vpc_master.id_vpc
   subnet_1    = var.cidr_block_worker_subnet_1
-  depends_on = [ module.vpc_worker ]
+  depends_on = [ module.vpc_master ]
 }
 module "sg-instances-worker" {
   source = "./modules/aws_security_group_instance"
@@ -56,6 +56,7 @@ module "sg-instances-worker" {
   sg-lb-id    = module.sg-instances-lb.id
   vpc_id      = module.vpc_master.id_vpc
   subnet_1    = var.cidr_block_master_subnet_1
+  depends_on = [ module.vpc_worker ]
 }
 module "master-control-plane" {
   source = "./modules/aws_instance"

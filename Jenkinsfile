@@ -68,9 +68,9 @@ pipeline {
                 }
             }
         }
-    stage('Test Path') {
+    stage('Test private key') {
             steps {
-               sh 'ls -l ~/.ssh/id_rsa.pub'
+               sh 'cat ~/.ssh/id_rsa.pub'
             }
         }
     // stage('Build image') {

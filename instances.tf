@@ -58,7 +58,7 @@ module "worker" {
   tag           = "worker_tf"
   depends_on    = [module.set-worker-default-router-associate , module.subnet_worker_1 , module.sg-instances-worker]
   ansible_playbook_path    = "ansible_templates/install_worker.yaml"
-  region        = var.region-master
+  region        = var.region-worker
   profile       = var.profile
   
 }

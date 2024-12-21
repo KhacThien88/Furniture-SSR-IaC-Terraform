@@ -131,8 +131,8 @@ pipeline {
                         sudo bash -c 
                         if [ ! -d ~/kubespray ]; then
                               echo "Cloning kubespray repository..."
-                              sudo apt update
-                              sudo apt install -y git python3 python3-pip
+                              sudo yum update
+                              sudo yum install -y git python3 python3-pip
                               git clone https://github.com/kubernetes-sigs/kubespray.git 
                               pip3 install -r ~/kubespray/requirements.txt
                               pip3 install --upgrade cryptography
@@ -207,19 +207,19 @@ stage('Install Ansible and playbook') {
                 sudo bash -c 
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
-                sudo apt update -y || { echo 'apt update failed!'; exit 1; }
+                sudo yum update -y || { echo 'yum update failed!'; exit 1; }
 
                 echo 'Installing software-properties-common...'
-                sudo apt install -y software-properties-common || { echo 'apt install failed!'; exit 1; }
+                sudo yum install -y software-properties-common || { echo 'yum install failed!'; exit 1; }
 
                 echo 'Adding Ansible PPA...'
-                sudo add-apt-repository ppa:ansible/ansible -y || { echo 'add-apt-repository failed!'; exit 1; }
+                sudo add-yum-repository ppa:ansible/ansible -y || { echo 'add-yum-repository failed!'; exit 1; }
 
                 echo 'Updating package lists again...'
-                sudo apt update -y || { echo 'Second apt update failed!'; exit 1; }
+                sudo yum update -y || { echo 'Second yum update failed!'; exit 1; }
 
                 echo 'Installing Ansible...'
-                sudo apt install -y ansible || { echo 'apt install ansible failed!'; exit 1; }
+                sudo yum install -y ansible || { echo 'yum install ansible failed!'; exit 1; }
 
                 echo 'Checking Ansible version...'
                 ansible --version || { echo 'ansible --version failed!'; exit 1; }

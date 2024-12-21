@@ -8,3 +8,6 @@
 output "tags" {
   value = aws_instance.jenkins-master.tags
 }
+output "public_ip" {
+  value = aws_instance.jenkins-master.public_ip
+}

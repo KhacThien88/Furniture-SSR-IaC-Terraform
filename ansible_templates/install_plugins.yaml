@@ -1,4 +1,5 @@
 - hosts: "{{ passed_in_hosts }}"
+  become: true
   tasks:
     - name: Copy SSH private key to remote machine
       copy:

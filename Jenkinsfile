@@ -96,7 +96,19 @@ pipeline {
     //     }
     //   }
     // }
-    
+    stage('Whoami test SSH') {
+    steps {
+        script {
+            vm1.user = 'root'
+            vm1.password = '111111aA@'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+        }
+        sshCommand(remote: vm1, command: """
+            whoami
+        """)
+    }
+}
     stage('Install kubespray') {
     steps {
         script {

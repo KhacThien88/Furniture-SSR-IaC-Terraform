@@ -322,8 +322,6 @@ spec:
             """)
           }
         }
-      }
-    }
 stage('Create Ingress to Route53') {
     steps {
         script {
@@ -365,7 +363,7 @@ spec:
             """)
         }
     }
+  }
 }
-
 
 

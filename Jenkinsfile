@@ -128,7 +128,7 @@ pipeline {
             private_ip_2 = sh(script: "terraform output -raw private_ip_address_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
-                        sudo su
+                        sudo bash -c 
                         if [ ! -d ~/kubespray ]; then
                               echo "Cloning kubespray repository..."
                               sudo apt update
@@ -204,7 +204,7 @@ stage('Install Ansible and playbook') {
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
-                sudo su
+                sudo bash -c 
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
                 sudo apt update -y || { echo 'apt update failed!'; exit 1; }
@@ -242,7 +242,7 @@ stage('Install Ansible and playbook') {
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
      sshCommand(remote: vm1, command: """ 
-     sudo su
+     sudo bash -c 
      kubectl create namespace devops-tools       
      echo "   
 apiVersion: apps/v1
@@ -289,7 +289,7 @@ spec:
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-    sudo su
+    sudo bash -c 
     echo "
 apiVersion: v1
 kind: Service
@@ -320,7 +320,7 @@ spec:
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-            sudo su
+            sudo bash -c 
             kubectl apply -f ~/deployment.yaml
             kubectl apply -f ~/service.yaml
             """)

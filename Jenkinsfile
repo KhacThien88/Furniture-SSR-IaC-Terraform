@@ -302,7 +302,6 @@ spec:
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-            sudo bash -c 
             kubectl apply -f ~/deployment.yaml
             kubectl apply -f ~/service.yaml
             """)

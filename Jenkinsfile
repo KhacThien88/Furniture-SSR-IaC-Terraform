@@ -101,7 +101,7 @@ pipeline {
     steps {
         script {
             vm1.user = 'ec2-user'
-            vm1.identityFile = '~/.ssh/id_rsa.pub'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -179,7 +179,7 @@ stage('Install Ansible and playbook') {
     steps {
         script {
             vm1.user = 'ec2-user'
-            vm1.identityFile = '~/.ssh/id_rsa.pub'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -217,7 +217,7 @@ stage('Install Ansible and playbook') {
       steps {
         script {
             vm1.user = 'ec2-user'
-            vm1.identityFile = '~/.ssh/id_rsa.pub'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -264,7 +264,7 @@ spec:
     steps {
         script {
             vm1.user = 'ec2-user'
-            vm1.identityFile = '~/.ssh/id_rsa.pub'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -294,7 +294,7 @@ spec:
       steps {
         script {
             vm1.user = 'ec2-user'
-            vm1.identityFile = '~/.ssh/id_rsa.pub'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()

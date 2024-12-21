@@ -1,7 +1,7 @@
 resource "aws_lb_target_group" "app-lb-tg" {
   name        = "app-lb-tg"
-  port        = 80
-  target_type = "ip"
+  port        = 31000
+  target_type = "instance"
   vpc_id      = var.vpc_master_id
   protocol    = "HTTP"
   health_check {

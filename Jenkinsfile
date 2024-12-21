@@ -68,11 +68,7 @@ pipeline {
                 }
             }
         }
-    stage('Test private key') {
-            steps {
-               sh 'cat ~/.ssh/id_rsa'
-            }
-        }
+
     // stage('Build image') {
     //   steps {
     //     container('docker') {
@@ -104,7 +100,6 @@ pipeline {
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
-            sudo bash -c 
             whoami
         """)
     }
@@ -188,8 +183,7 @@ node2 ansible_host=${vm2.host}  ansible_user=root ansible_ssh_pass=111111aA@ ip=
 stage('Install Ansible and playbook') {
     steps {
         script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.user = 'root'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -227,14 +221,13 @@ stage('Install Ansible and playbook') {
     stage('Create Deployment YAML') {
       steps {
         script {
-            vm1.user = 'ubuntu'
+            vm1.user = 'root'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
      sshCommand(remote: vm1, command: """ 
-     sudo bash -c 
      kubectl create namespace devops-tools       
      echo "   
 apiVersion: apps/v1
@@ -274,14 +267,12 @@ spec:
     stage('Create Service YAML') {
     steps {
         script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.user = 'root'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-    sudo bash -c 
     echo "
 apiVersion: v1
 kind: Service
@@ -305,8 +296,7 @@ spec:
     stage('Deploying App to Kubernetes') {
       steps {
         script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.user = 'root'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()

@@ -47,11 +47,7 @@ pipeline {
         }
       }
     }
-    stage('Test profile default in node') {
-      steps {
-        sh 'ls-l ~/.aws/credentials '
-      }
-    }
+    
     stage('Create Resource Terraform in AWS'){
       steps{
        withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-credential', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {

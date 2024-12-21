@@ -108,9 +108,11 @@ pipeline {
             private_ip_2 = sh(script: "terraform output -raw private_ip_address_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
-                        sudo su
-                        whoami
-        """)
+    sudo bash -c '
+    whoami
+    echo "This is running as root"
+    '
+""")
     }
 }
 

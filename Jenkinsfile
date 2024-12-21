@@ -7,11 +7,13 @@ def vm1=[:]
 vm1.name = 'vm1'
 vm1.allowAnyHosts = true
 vm1.port = 22
+vm1.authentication= 'password'
 
 def vm2=[:]
 vm2.name = 'vm2'
 vm2.allowAnyHosts = true
 vm2.port = 22
+vm2.authentication= 'password'
 
 def private_ip_1 = ''
 def private_ip_2 = ''

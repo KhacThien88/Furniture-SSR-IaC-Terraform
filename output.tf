@@ -7,9 +7,15 @@ output "route_table_worker_id" {
 output "route_table_association" {
   value = module.set-worker-default-router-associate.id
 }
-output "public_ip_master" {
+output "public_ip_vm_1" {
   value = module.master-control-plane.public_ip
 }
-output "public_ip_worker" {
+output "public_ip_vm_2" {
   value = module.worker.public_ip
+}
+output "private_ip_address_vm_1" {
+  value = module.master-control-plane.private_ip
+}
+output "private_ip_address_vm_2" {
+  value = module.worker.private_ip
 }

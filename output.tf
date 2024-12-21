@@ -19,3 +19,6 @@ output "private_ip_address_vm_1" {
 output "private_ip_address_vm_2" {
   value = module.worker.private_ip
 }
+output "certificate_arn" {
+  value = module.route53-acm.arn
+}

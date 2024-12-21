@@ -13,6 +13,7 @@ vm2.allowAnyHosts = true
 
 def private_ip_1 = ''
 def private_ip_2 = ''
+def cert_arn = ''
 
 pipeline {
   environment {
@@ -63,6 +64,7 @@ pipeline {
                     def publicIpVm1 = sh(script: 'terraform output -raw public_ip_vm_1', returnStdout: true).trim()
                     def publicIpVm2 = sh(script: 'terraform output -raw public_ip_vm_2', returnStdout: true).trim()
 
+
                     echo "Public IP of VM 1: ${publicIpVm1}"
                     echo "Public IP of VM 2: ${publicIpVm2}"
                 }
@@ -96,17 +98,18 @@ pipeline {
     //     }
     //   }
     // }
-    stage('Whoami test SSH') {
+    stage('Write acm-arn in master') {
     steps {
         script {
             vm1.user = 'ubuntu'
             vm1.password = '111111aA@'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            cert_arn = sh(script: "terraform output -raw certificate_arn", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
             sudo bash -c 
-            whoami
+            echo ${cert_arn} > ~/cert_arn
         """)
     }
 }
@@ -314,12 +317,52 @@ spec:
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-            sudo bash -c 
-            kubectl apply -f ~/deployment.yaml
-            kubectl apply -f ~/service.yaml
+            sudo kubectl apply -f ~/deployment.yaml
+            sudo kubectl apply -f ~/service.yaml
             """)
           }
         }
       }
     }
+    stage('Create Ingress to route53') {
+      steps {
+        script {
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+        }
+        sshCommand(remote: vm1, command: """ 
+            sudo bash -c 
+    echo "
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: react-app-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/certificate-arn: "<CERTIFICATE_ARN>"
+spec:
+  rules:
+    - host: mysite.khacthienit.click
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: react-app-svc
+                port:
+                  number: 80
+
+      " > ~/ingressroute53.yaml
+      CERT_ARN=$(cat ~/cert_arn)
+      sed -i "s|<CERTIFICATE_ARN>|$CERT_ARN|g" ~/ingress.yaml
+      kubectl apply -f ~/ingress.yaml
+            """)
+          }
+        }
+
 

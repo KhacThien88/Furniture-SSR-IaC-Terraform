@@ -99,12 +99,13 @@ pipeline {
     stage('Whoami test SSH') {
     steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ubuntu'
             vm1.password = '111111aA@'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
+            sudo bash -c 
             whoami
         """)
     }
@@ -112,7 +113,7 @@ pipeline {
     stage('Install kubespray') {
     steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
@@ -121,6 +122,7 @@ pipeline {
             private_ip_2 = sh(script: "terraform output -raw private_ip_address_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
+                        sudo bash -c 
                         if [ ! -d ~/kubespray ]; then
                               echo "Cloning kubespray repository..."
                               sudo apt update
@@ -167,15 +169,15 @@ node2 ansible_host=${vm2.host}  ansible_ssh_private_key_file=~/.ssh/id_rsa ip=${
 # We should set etcd_member_name for etcd cluster. The node that are not etcd members do not need to set the value,
 # or can set the empty string value.
 [kube_control_plane]
-node1 ansible_host=${vm1.host}  ansible_user=adminuser ansible_ssh_pass=111111aA@ ip=${private_ip_1} etcd_member_name=etcd1
-# node2 ansible_host=52.237.213.222  ansible_user=adminuser ansible_ssh_pass=111111aA@ ip=10.0.1.5 etcd_member_name=etcd2>
+node1 ansible_host=${vm1.host}  ansible_ssh_private_key_file=~/.ssh/id_rsa ip=${private_ip_1} etcd_member_name=etcd1
+# node2 ansible_host=52.237.213.222  ansible_ssh_private_key_file=~/.ssh/id_rsa ip=10.0.1.5 etcd_member_name=etcd2>
 # node3 ansible_host=95.54.0.14  # ip=10.3.0.3 etcd_member_name=etcd3
 
 [etcd:children]
 kube_control_plane
 
 [kube_node]
-node2 ansible_host=${vm2.host}  ansible_user=adminuser ansible_ssh_pass=111111aA@ ip=${private_ip_2}
+node2 ansible_host=${vm2.host}  ansible_ssh_private_key_file=~/.ssh/id_rsa ip=${private_ip_2}
 # node4 ansible_host=95.54.0.15  # ip=10.3.0.4
 # node5 ansible_host=95.54.0.16  # ip=10.3.0.5
 # node6 ansible_host=95.54.0.17  # ip=10.3.0.6
@@ -189,14 +191,14 @@ node2 ansible_host=${vm2.host}  ansible_user=adminuser ansible_ssh_pass=111111aA
 stage('Install Ansible and playbook') {
     steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
-                sudo su
+                sudo bash -c 
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
                 sudo apt update -y || { echo 'apt update failed!'; exit 1; }
@@ -227,13 +229,14 @@ stage('Install Ansible and playbook') {
     stage('Create Deployment YAML') {
       steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
      sshCommand(remote: vm1, command: """ 
+     sudo bash -c 
      kubectl create namespace devops-tools       
      echo "   
 apiVersion: apps/v1
@@ -273,13 +276,14 @@ spec:
     stage('Create Service YAML') {
     steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
+    sudo bash -c 
     echo "
 apiVersion: v1
 kind: Service
@@ -303,13 +307,14 @@ spec:
     stage('Deploying App to Kubernetes') {
       steps {
         script {
-            vm1.user = 'ec2-user'
+            vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
+            sudo bash -c 
             kubectl apply -f ~/deployment.yaml
             kubectl apply -f ~/service.yaml
             """)

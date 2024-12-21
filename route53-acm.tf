@@ -5,4 +5,6 @@ module "route53-acm" {
   }
   site-name = var.site-name
   dns-name = var.dns-name
+  lb_dns_name = module.lb.dns
+  lb_zone_id = module.lb.zone_id
 }

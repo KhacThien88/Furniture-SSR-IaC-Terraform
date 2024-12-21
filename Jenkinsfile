@@ -97,7 +97,7 @@ pipeline {
     stage('Install kubespray') {
     steps {
         script {
-            vm1.user = root
+            vm1.user = 'ec2-user'
             vm1.identityFile = '~/.ssh/id_rsa.pub'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
@@ -106,6 +106,7 @@ pipeline {
             private_ip_2 = sh(script: "terraform output -raw private_ip_address_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
+                        sudo su
                         if [ ! -d ~/kubespray ]; then
                               echo "Cloning kubespray repository..."
                               sudo apt update
@@ -174,13 +175,14 @@ node2 ansible_host=${vm2.host}  ansible_user=adminuser ansible_ssh_pass=111111aA
 stage('Install Ansible and playbook') {
     steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ec2-user'
             vm1.identityFile = '~/.ssh/id_rsa.pub'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
+                sudo su
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
                 sudo apt update -y || { echo 'apt update failed!'; exit 1; }
@@ -211,12 +213,14 @@ stage('Install Ansible and playbook') {
     stage('Create Deployment YAML') {
       steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ec2-user'
+            vm1.identityFile = '~/.ssh/id_rsa.pub'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
      sshCommand(remote: vm1, command: """ 
+     sudo su
      kubectl create namespace devops-tools       
      echo "   
 apiVersion: apps/v1
@@ -256,7 +260,8 @@ spec:
     stage('Create Service YAML') {
     steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ec2-user'
+            vm1.identityFile = '~/.ssh/id_rsa.pub'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -285,7 +290,8 @@ spec:
     stage('Deploying App to Kubernetes') {
       steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ec2-user'
+            vm1.identityFile = '~/.ssh/id_rsa.pub'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()

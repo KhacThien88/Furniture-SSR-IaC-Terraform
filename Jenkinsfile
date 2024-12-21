@@ -6,14 +6,10 @@ remote.allowAnyHosts = true
 def vm1=[:]
 vm1.name = 'vm1'
 vm1.allowAnyHosts = true
-vm1.port = 22
-vm1.authentication= 'password'
 
 def vm2=[:]
 vm2.name = 'vm2'
 vm2.allowAnyHosts = true
-vm2.port = 22
-vm2.authentication= 'password'
 
 def private_ip_1 = ''
 def private_ip_2 = ''
@@ -72,7 +68,11 @@ pipeline {
                 }
             }
         }
-
+    stage('Test ansible') {
+            steps {
+               sh 'ansible --version'
+            }
+        }
     // stage('Build image') {
     //   steps {
     //     container('docker') {
@@ -101,6 +101,7 @@ pipeline {
         script {
             vm1.user = 'ubuntu'
             vm1.password = '111111aA@'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
@@ -113,6 +114,7 @@ pipeline {
     steps {
         script {
             vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -139,7 +141,7 @@ pipeline {
 # We should set etcd_member_name for etcd cluster. The node that are not etcd members do not need to set the value,
 # or can set the empty string value.
 [kube_control_plane]
-node1 ansible_host=${vm1.host}  ansible_user=ubuntu ansible_ssh_pass=111111aA@ ip=${private_ip_1} etcd_member_name=etcd1
+node1 ansible_host=${vm1.host}  ansible_ssh_private_key_file=~/.ssh/id_rsa ip=${private_ip_1} ansible_become=true ansible_become_user=root etcd_member_name=etcd1
 # node2 ansible_host=52.237.213.222  ansible_user=adminuser ansible_ssh_pass=111111aA@ ip=10.0.1.5 etcd_member_name=etcd2>
 # node3 ansible_host=95.54.0.14  # ip=10.3.0.3 etcd_member_name=etcd3
 
@@ -147,7 +149,7 @@ node1 ansible_host=${vm1.host}  ansible_user=ubuntu ansible_ssh_pass=111111aA@ i
 kube_control_plane
 
 [kube_node]
-node2 ansible_host=${vm2.host}  ansible_user=ubuntu ansible_ssh_pass=111111aA@ ip=${private_ip_2}
+node2 ansible_host=${vm2.host}  ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_become=true ansible_become_user=root ip=${private_ip_2}
 # node4 ansible_host=95.54.0.15  # ip=10.3.0.4
 # node5 ansible_host=95.54.0.16  # ip=10.3.0.5
 # node6 ansible_host=95.54.0.17  # ip=10.3.0.6
@@ -167,7 +169,7 @@ node2 ansible_host=${vm2.host}  ansible_user=ubuntu ansible_ssh_pass=111111aA@ i
 # We should set etcd_member_name for etcd cluster. The node that are not etcd members do not need to set the value,
 # or can set the empty string value.
 [kube_control_plane]
-node1 ansible_host=${vm1.host}  ansible_user=ubuntu ansible_ssh_pass=111111aA@ ip=${private_ip_1} etcd_member_name=etcd1
+node1 ansible_host=${vm1.host}  ansible_ssh_private_key_file=~/.ssh/id_rsa ip=${private_ip_1} ansible_become=true ansible_become_user=root etcd_member_name=etcd1
 # node2 ansible_host=52.237.213.222  ansible_ssh_private_key_file=~/.ssh/id_rsa ip=10.0.1.5 etcd_member_name=etcd2>
 # node3 ansible_host=95.54.0.14  # ip=10.3.0.3 etcd_member_name=etcd3
 
@@ -175,7 +177,7 @@ node1 ansible_host=${vm1.host}  ansible_user=ubuntu ansible_ssh_pass=111111aA@ i
 kube_control_plane
 
 [kube_node]
-node2 ansible_host=${vm2.host}  ansible_user=ubuntu ansible_ssh_pass=111111aA@ ip=${private_ip_2}
+node2 ansible_host=${vm2.host}  ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_become=true ansible_become_user=root ip=${private_ip_2}
 # node4 ansible_host=95.54.0.15  # ip=10.3.0.4
 # node5 ansible_host=95.54.0.16  # ip=10.3.0.5
 # node6 ansible_host=95.54.0.17  # ip=10.3.0.6
@@ -190,12 +192,14 @@ stage('Install Ansible and playbook') {
     steps {
         script {
             vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
                 sudo bash -c 
+                sudo su
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
                 sudo apt update -y || { echo 'apt update failed!'; exit 1; }
@@ -227,6 +231,7 @@ stage('Install Ansible and playbook') {
       steps {
         script {
             vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -272,7 +277,8 @@ spec:
     stage('Create Service YAML') {
     steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
@@ -302,7 +308,8 @@ spec:
     stage('Deploying App to Kubernetes') {
       steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()

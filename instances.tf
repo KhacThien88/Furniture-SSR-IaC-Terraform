@@ -35,7 +35,7 @@ module "master-control-plane" {
     aws = aws.region-master
   }
   ami           = module.MasterAmi.value
-  instance-type = var.instance-type
+  instance-type = var.instance-type-master
   key_name      = module.master-key.key_name
   subnet_id_1   = module.subnet_master_1.id
   sg_id         = module.sg-instances-master.id

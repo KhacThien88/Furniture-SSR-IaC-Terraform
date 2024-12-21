@@ -327,13 +327,12 @@ spec:
 stage('Create Ingress to Route53') {
     steps {
         script {
-            def vm1 = [
-                user         : 'ubuntu',
-                identityFile : '~/.ssh/id_rsa',
-                password     : '111111aA@',
-                host         : sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            ]
-
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+        }
             sshCommand(remote: vm1, command: """
                 sudo bash -c '
                 echo "

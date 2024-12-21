@@ -2,7 +2,7 @@
   tasks:
     - name: Copy SSH private key to remote machine
       copy:
-        src: ~/.ssh/id_rsa
+        src: /var/lib/jenkins/.ssh/id_rsa
         dest: /root/.ssh/id_rsa
         owner: root
         group: root
@@ -10,7 +10,7 @@
 
     - name: Copy SSH public key to authorized_keys
       copy:
-        src: ~/.ssh/id_rsa.pub
+        src: /var/lib/jenkins/.ssh/id_rsa.pub
         dest: /root/.ssh/authorized_keys
         owner: root
         group: root

@@ -20,11 +20,11 @@ variable "workers-count" {
 }
 variable "instance-type" {
   type    = string
-  default = "t4g.small"
+  default = "t3.small"
 }
 variable "instance-type-master" {
   type    = string
-  default = "t4g.small"
+  default = "t3.small"
 }
 variable "webserver-port" {
   type    = number

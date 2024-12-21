@@ -199,7 +199,6 @@ stage('Install Ansible and playbook') {
         }
         sshCommand(remote: vm1, command: """
                 sudo bash -c 
-                sudo su
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
                 sudo apt update -y || { echo 'apt update failed!'; exit 1; }

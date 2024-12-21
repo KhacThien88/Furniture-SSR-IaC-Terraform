@@ -70,7 +70,7 @@ pipeline {
         }
     stage('Test private key') {
             steps {
-               sh 'cat ~/.ssh/id_rsa.pub'
+               sh 'cat ~/.ssh/id_rsa'
             }
         }
     // stage('Build image') {

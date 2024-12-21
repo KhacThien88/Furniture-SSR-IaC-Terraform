@@ -96,7 +96,24 @@ pipeline {
     //     }
     //   }
     // }
-    
+    stage('Whoami test SSH') {
+    steps {
+        script {
+            vm1.user = 'ec2-user'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+            private_ip_1 = sh(script: "terraform output -raw private_ip_address_vm_1", returnStdout: true).trim()
+            private_ip_2 = sh(script: "terraform output -raw private_ip_address_vm_2", returnStdout: true).trim()
+        }
+        sshCommand(remote: vm1, command: """
+                        sudo su
+                        whoami
+        """)
+    }
+}
+
     stage('Install kubespray') {
     steps {
         script {

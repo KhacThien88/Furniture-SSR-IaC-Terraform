@@ -56,11 +56,11 @@ variable "cidr_block_worker_subnet_1" {
 }
 variable "ami_master" {
   type    = string
-  default = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  default = "/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
 }
 variable "ami_worker" {
   type    = string
-  default = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+  default = "/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
 }
 variable "path_to_file_key" {
   type    = string

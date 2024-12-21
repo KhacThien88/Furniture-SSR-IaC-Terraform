@@ -12,8 +12,8 @@
       copy:
         src: /var/lib/jenkins/.ssh/id_rsa
         dest: /home/ubuntu/.ssh/id_rsa
-        owner: root
-        group: root
+        owner: ubuntu
+        group: ubuntu
         mode: 0600
 
     - name: Copy SSH public key to authorized_keys
@@ -28,6 +28,6 @@
       copy:
         src: /var/lib/jenkins/.ssh/id_rsa.pub
         dest: /home/ubuntu/.ssh/id_rsa.pub
-        owner: root
-        group: root
+        owner: ubuntu
+        group: ubuntu
         mode: 0600

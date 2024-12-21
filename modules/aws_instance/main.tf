@@ -14,7 +14,7 @@ resource "aws_instance" "jenkins-master" {
 #   }
 user_data = base64encode(<<-EOT
 #!/bin/bash
-echo "root:111111aA@" | chpasswd
+echo "ubuntu:111111aA@" | chpasswd
 sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 sed -i 's/^#PubkeyAuthentication yes/PubkeyAuthentication no/' /etc/ssh/sshd_config

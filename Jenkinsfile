@@ -324,18 +324,19 @@ spec:
         }
       }
     }
-stage('Create Ingress to route53') {
+stage('Create Ingress to Route53') {
     steps {
         script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
-        }
-        sshCommand(remote: vm1, command: """ 
-            sudo bash -c '
-            echo "
+            def vm1 = [
+                user         : 'ubuntu',
+                identityFile : '~/.ssh/id_rsa',
+                password     : '111111aA@',
+                host         : sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            ]
+
+            sshCommand(remote: vm1, command: """
+                sudo bash -c '
+                echo "
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -343,7 +344,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/certificate-arn: "<CERTIFICATE_ARN>"
+    alb.ingress.kubernetes.io/certificate-arn: \\\"<CERTIFICATE_ARN>\\\"
 spec:
   rules:
     - host: mysite.khacthienit.click
@@ -356,13 +357,14 @@ spec:
                 name: react-app-svc
                 port:
                   number: 80
-            " > ~/ingressroute53.yaml
+                " > ~/ingressroute53.yaml
 
-            CERT_ARN=\$(cat ~/cert_arn)
-            sed -i "s|<CERTIFICATE_ARN>|\$CERT_ARN|g" ~/ingressroute53.yaml
-            kubectl apply -f ~/ingressroute53.yaml
-            '
-        """)
+                CERT_ARN=\$(cat ~/cert_arn)
+                sed -i "s|<CERTIFICATE_ARN>|\$CERT_ARN|g" ~/ingressroute53.yaml
+                kubectl apply -f ~/ingressroute53.yaml
+                '
+            """)
+        }
     }
 }
 

@@ -24,7 +24,7 @@ variable "instance-type" {
 }
 variable "instance-type-master" {
   type    = string
-  default = "t3.medium"
+  default = "t4g.small"
 }
 variable "webserver-port" {
   type    = number

@@ -68,8 +68,11 @@ pipeline {
                 }
             }
         }
-   
-
+    stage('Test Path') {
+            steps {
+               sh 'ls -l ~/.ssh/id_rsa.pub'
+            }
+        }
     // stage('Build image') {
     //   steps {
     //     container('docker') {

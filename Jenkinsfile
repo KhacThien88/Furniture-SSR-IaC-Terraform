@@ -324,8 +324,8 @@ spec:
         }
       }
     }
-    stage('Create Ingress to route53') {
-      steps {
+stage('Create Ingress to route53') {
+    steps {
         script {
             vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
@@ -334,8 +334,8 @@ spec:
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-            sudo bash -c 
-    echo "
+            sudo bash -c '
+            echo "
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -356,13 +356,15 @@ spec:
                 name: react-app-svc
                 port:
                   number: 80
+            " > ~/ingressroute53.yaml
 
-      " > ~/ingressroute53.yaml
-      CERT_ARN=$(cat ~/cert_arn)
-      sed -i "s|<CERTIFICATE_ARN>|$CERT_ARN|g" ~/ingress.yaml
-      kubectl apply -f ~/ingress.yaml
-            """)
-          }
-        }
+            CERT_ARN=\$(cat ~/cert_arn)
+            sed -i "s|<CERTIFICATE_ARN>|\$CERT_ARN|g" ~/ingressroute53.yaml
+            kubectl apply -f ~/ingressroute53.yaml
+            '
+        """)
+    }
+}
+
 
 

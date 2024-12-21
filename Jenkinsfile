@@ -11,6 +11,7 @@ vm1.port = 22
 def vm2=[:]
 vm2.name = 'vm2'
 vm2.allowAnyHosts = true
+vm2.port = 22
 
 def private_ip_1 = ''
 def private_ip_2 = ''

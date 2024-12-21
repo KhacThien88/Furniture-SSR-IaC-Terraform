@@ -6,6 +6,7 @@ remote.allowAnyHosts = true
 def vm1=[:]
 vm1.name = 'vm1'
 vm1.allowAnyHosts = true
+vm1.port = 22
 
 def vm2=[:]
 vm2.name = 'vm2'

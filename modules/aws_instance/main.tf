@@ -12,13 +12,19 @@ resource "aws_instance" "jenkins-master" {
 # ansible-playbook --extra-vars 'passed_in_hosts=tag_Name_${self.tags.Name}' ${var.ansible_playbook_path}
 # EOF
 #   }
-  user_data = base64encode(<<-EOT
+user_data = base64encode(<<-EOT
 #!/bin/bash
 echo "root:111111aA@" | chpasswd
 sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sed -i 's/^#PubkeyAuthentication yes/PubkeyAuthentication no/' /etc/ssh/sshd_config
+sed -i 's/^#ChallengeResponseAuthentication yes/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
+systemctl restart ssh 
 systemctl restart sshd 
+systemctl restart sshd.service 
 EOT
 )
+
   tags = {
     Name = var.tag
   }

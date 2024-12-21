@@ -100,7 +100,7 @@ pipeline {
     stage('Install kubespray') {
     steps {
         script {
-            vm1.user = 'root'
+            vm1.user = 'ec2-user'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
@@ -109,6 +109,7 @@ pipeline {
             private_ip_2 = sh(script: "terraform output -raw private_ip_address_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
+                        sudo su
                         if [ ! -d ~/kubespray ]; then
                               echo "Cloning kubespray repository..."
                               sudo apt update

@@ -10,6 +10,35 @@ resource "aws_security_group" "jenkins-sg-worker" {
     cidr_blocks = [var.external_ip]
   }
   ingress {
+    description = "Allow 80 from our public IP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  ingress {
+    description = "Allow 443 from our public IP"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+
+  ingress {
+    description = "Allow anyone on port 8080"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Allow anyone on port 32100"
+    from_port   = 32100
+    to_port     = 32100
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
     description = "Allow traffic from us-east-1"
     from_port   = 0
     to_port     = 0
@@ -20,6 +49,35 @@ resource "aws_security_group" "jenkins-sg-worker" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    description = "Allow 80 from our public IP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  egress {
+    description = "Allow 443 from our public IP"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+
+  egress {
+    description = "Allow anyone on port 8080"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    description = "Allow anyone on port 32100"
+    from_port   = 32100
+    to_port     = 32100
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }

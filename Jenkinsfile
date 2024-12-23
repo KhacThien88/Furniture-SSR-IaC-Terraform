@@ -325,62 +325,7 @@ spec:
             """)
           }
         }
-stage('Create Ingress to Route53') {
-    steps {
-        script {
-            // Define VM credentials
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
-            
-            // SSH into the VM and create ingress
-            sshCommand(remote: vm1, command: """
-sudo bash -c '
-# Define ingress YAML file content
-cat <<EOF > ~/ingressroute53.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: my-app-ingress
-  annotations:
-    kubernetes.io/ingress.class: "alb"
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-    alb.ingress.kubernetes.io/load-balancer-arn: "<ALB_ARN>"
-    alb.ingress.kubernetes.io/certificate-arn: "<ACM_CERTIFICATE_ARN>"
-    alb.ingress.kubernetes.io/ssl-redirect: '443'
-    alb.ingress.kubernetes.io/target-type: instance
-    alb.ingress.kubernetes.io/backend-protocol: HTTP
-spec:
-  rules:
-    - host: mysite.khacthienit.click
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: react-app-service
-                port:
-                  number: 80
-EOF
-
-# Replace placeholders with actual ARNs
-CERT_ARN=\$(cat /home/ubuntu/cert_arn)
-ALB_ARN1=\$(cat /home/ubuntu/alb_arn)
-sed -i "s|<ACM_CERTIFICATE_ARN>|\${CERT_ARN}|g" ~/ingressroute53.yaml
-sed -i "s|<ALB_ARN>|\${ALB_ARN1}|g" ~/ingressroute53.yaml
-kubectl apply -f ~/ingressroute53.yaml
-
-# Apply the ingress resource to the Kubernetes cluster
-kubectl apply -f ~/ingressroute53.yaml
-'
-            """)
-        }
-    }
-}
+    
   }
 }
 

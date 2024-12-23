@@ -14,6 +14,7 @@ vm2.allowAnyHosts = true
 def private_ip_1 = ''
 def private_ip_2 = ''
 def cert_arn = ''
+def alb_arn = ''
 
 pipeline {
   environment {
@@ -98,7 +99,7 @@ pipeline {
     //     }
     //   }
     // }
-    stage('Write acm-arn in master') {
+    stage('Write acm-arn , alb-arn in master') {
     steps {
         script {
             vm1.user = 'ubuntu'
@@ -106,10 +107,12 @@ pipeline {
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             cert_arn = sh(script: "terraform output -raw certificate_arn", returnStdout: true).trim()
+            alb_arn = sh(script: "terraform output -raw alb_arn",returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
             sudo bash -c 
             echo ${cert_arn} > ~/cert_arn
+            echo ${alb_arn} > ~/alb_arn
         """)
     }
 }
@@ -325,45 +328,58 @@ spec:
 stage('Create Ingress to Route53') {
     steps {
         script {
+            // Define VM credentials
             vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
             vm1.password = '111111aA@'
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
-        }
+            
+            // SSH into the VM and create ingress
             sshCommand(remote: vm1, command: """
-                sudo bash -c '
-                echo "
+sudo bash -c '
+# Define ingress YAML file content
+cat <<EOF > ~/ingressroute53.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: my-app-ingress
   annotations:
+    kubernetes.io/ingress.class: "alb"
     alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/healthcheck-path: "/index.html"
-    alb.ingress.kubernetes.io/healthcheck-port: "80"
-    alb.ingress.kubernetes.io/certificate-arn: <acm-certificate-arn> # Nếu dùng HTTPS
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/load-balancer-arn: "<ALB_ARN>"
+    alb.ingress.kubernetes.io/certificate-arn: "<ACM_CERTIFICATE_ARN>"
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/target-type: instance
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
 spec:
   rules:
-    - host: myapp.example.com
+    - host: mysite.khacthienit.click
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: my-app-service
+                name: react-app-service
                 port:
                   number: 80
-                " > ~/ingressroute53.yaml
-                CERT_ARN=\$(cat /home/ubuntu/cert_arn)
-                sed -i "s|<acm-certificate-arn>|\$CERT_ARN|g" ~/ingressroute53.yaml
-                kubectl apply -f ~/ingressroute53.yaml
-                '
+EOF
+
+# Replace placeholders with actual ARNs
+CERT_ARN=$(cat /home/ubuntu/cert_arn)
+ALB_ARN1=$(cat /home/ubuntu/alb_arn)
+sed -i "s|<ACM_CERTIFICATE_ARN>|$CERT_ARN|g" ~/ingressroute53.yaml
+sed -i "s|<ALB_ARN>|$ALB_ARN1|g" ~/ingressroute53.yaml
+
+# Apply the ingress resource to the Kubernetes cluster
+kubectl apply -f ~/ingressroute53.yaml
+'
             """)
         }
     }
+}
   }
 }
 

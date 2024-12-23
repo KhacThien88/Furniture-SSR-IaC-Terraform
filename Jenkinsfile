@@ -249,7 +249,7 @@ metadata:
   labels:
     app: react-app
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: react-app
@@ -356,7 +356,7 @@ spec:
                 name: my-app-service
                 port:
                   number: 80
-
+                " > ~/ingressroute53.yaml
                 CERT_ARN=\$(cat /home/ubuntu/cert_arn)
                 sed -i "s|<acm-certificate-arn>|\$CERT_ARN|g" ~/ingressroute53.yaml
                 kubectl apply -f ~/ingressroute53.yaml

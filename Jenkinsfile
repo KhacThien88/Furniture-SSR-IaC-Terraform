@@ -252,7 +252,7 @@ metadata:
   labels:
     app: react-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: react-app
@@ -325,7 +325,44 @@ spec:
             """)
           }
         }
-    
+    stage('Add healthcheck file to ALB to Kubernetes Cluster'){
+      steps {
+        script {
+          sshCommand(remote: vm1, command: """ 
+            sudo bash -c 'echo "Health Check OK" > /var/www/html/healthz'
+            """)
+        }
+      }
+    }
+    stage('Install Nginx Controller'){
+      sshCommand(remote: vm1, command: """ 
+            sudo bash -c 
+            sudo apt update
+            sudo apt install nginx -y
+            sudo systemctl start nginx
+            sudo systemctl enable nginx
+            sudo systemctl status nginx
+            """)
+    }
+    stage('Setup default page Nginx'){
+      sshCommand(remote: vm1, command: """ 
+            sudo bash -c 
+            echo "
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://127.0.0.1:32100;
+    }
+
+    location /healthz {
+        root /var/www/html;
+    }
+}
+            " > /etc/nginx/sites-available/default
+            sudo systemctl restart nginx
+            """)
+    }
   }
 }
 

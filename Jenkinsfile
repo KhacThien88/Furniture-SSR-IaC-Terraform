@@ -357,7 +357,6 @@ spec:
             sudo apt install nginx -y
             sudo systemctl start nginx
             sudo systemctl enable nginx
-            sudo systemctl status nginx
             """)
        }
     }
@@ -377,7 +376,7 @@ server {
     listen 80;
 
     location / {
-        proxy_pass http://127.0.0.1:32100;
+        proxy_pass http://${vm1.host}:32100;
     }
 
     location /healthz {

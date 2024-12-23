@@ -368,10 +368,11 @@ spec:
 EOF
 
 # Replace placeholders with actual ARNs
-CERT_ARN=$(cat /home/ubuntu/cert_arn)
-ALB_ARN1=$(cat /home/ubuntu/alb_arn)
-sed -i "s|<ACM_CERTIFICATE_ARN>|$CERT_ARN|g" ~/ingressroute53.yaml
-sed -i "s|<ALB_ARN>|$ALB_ARN1|g" ~/ingressroute53.yaml
+CERT_ARN=\$(cat /home/ubuntu/cert_arn)
+ALB_ARN1=\$(cat /home/ubuntu/alb_arn)
+sed -i "s|<ACM_CERTIFICATE_ARN>|\${CERT_ARN}|g" ~/ingressroute53.yaml
+sed -i "s|<ALB_ARN>|\${ALB_ARN1}|g" ~/ingressroute53.yaml
+kubectl apply -f ~/ingressroute53.yaml
 
 # Apply the ingress resource to the Kubernetes cluster
 kubectl apply -f ~/ingressroute53.yaml

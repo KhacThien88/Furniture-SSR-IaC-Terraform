@@ -336,7 +336,8 @@ spec:
         }
         
           sshCommand(remote: vm1, command: """ 
-            sudo bash -c 'echo "Health Check OK" > /var/www/html/healthz'
+            sudo bash -c 
+            echo "Health Check OK" > /var/www/html/healthz
             """)
         
       }

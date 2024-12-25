@@ -555,6 +555,67 @@ spec:
         }
     }
 }
+stage('Create Deployment and Service YAML for Redis') {
+    steps {
+        script {
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()        
+           
+            sshCommand(remote: vm1, command: """
+            sudo bash -c
+            echo '
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: redisdb
+  name: redisdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redisdb
+  template:
+    metadata:
+      labels:
+        io.kompose.service: redisdb
+    spec:
+      containers:
+        - image: redis:latest
+          name: redisdb
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: redisdb
+  name: redisdb
+spec:
+  ports:
+    - name: "6379"
+      port: 6379
+      targetPort: 6379
+  selector:
+    io.kompose.service: redisdb
+' > ~/redis.yaml 
+            """)
+        }
+    }
+}
     stage('Deploying App to Kubernetes') {
       steps {
         script {
@@ -570,6 +631,7 @@ spec:
             sudo kubectl apply -f ~/elastic.yaml
             sudo kubectl apply -f ~/logstash.yaml
             sudo kubectl apply -f ~/kibana.yaml
+            sudo kubectl apply -f ~/redis.yaml
             """)
           }
         }

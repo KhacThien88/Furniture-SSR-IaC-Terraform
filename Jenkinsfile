@@ -490,7 +490,7 @@ spec:
         }
     }
 }
-stage('Create Deployment and Service YAML for logstash') {
+stage('Create Deployment and Service YAML for Kibana') {
     steps {
         script {
             vm1.user = 'ubuntu'

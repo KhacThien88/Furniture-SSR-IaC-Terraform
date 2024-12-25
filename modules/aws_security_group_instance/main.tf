@@ -3,7 +3,6 @@ resource "aws_security_group" "jenkins-sg" {
   description = "Allow TCP/8080 & TCP/22"
   vpc_id      = var.vpc_id
 
-  # Quy tắc cho SSH (cổng 22)
   ingress {
     description = "Allow 22 from our public IP"
     from_port   = 22
@@ -19,9 +18,30 @@ resource "aws_security_group" "jenkins-sg" {
     cidr_blocks = [var.external_ip]
   }
   ingress {
-    description = "Allow 22 from our public IP"
+    description = "Allow 443 from our public IP"
     from_port   = 443
     to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  ingress {
+    description = "Allow 5002 from our public IP"
+    from_port   = 5002
+    to_port     = 5002
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  ingress {
+    description = "Allow 5044 from our public IP"
+    from_port   = 5044
+    to_port     = 5044
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  ingress {
+    description = "Allow 5601 from our public IP"
+    from_port   = 5601
+    to_port     = 5601
     protocol    = "tcp"
     cidr_blocks = [var.external_ip]
   }
@@ -32,6 +52,13 @@ resource "aws_security_group" "jenkins-sg" {
     to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Allow 9200 from our public IP"
+    from_port   = 9200
+    to_port     = 9200
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
   }
   ingress {
     description = "Allow anyone on port 8080"
@@ -61,6 +88,27 @@ resource "aws_security_group" "jenkins-sg" {
     protocol    = "tcp"
     cidr_blocks = [var.external_ip]
   }
+  egress {
+    description = "Allow 5002 from our public IP"
+    from_port   = 5002
+    to_port     = 5002
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  egress {
+    description = "Allow 5044 from our public IP"
+    from_port   = 5044
+    to_port     = 5044
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  egress {
+    description = "Allow 5601 from our public IP"
+    from_port   = 5601
+    to_port     = 5601
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
 
   egress {
     description = "Allow anyone on port 8080"
@@ -70,7 +118,14 @@ resource "aws_security_group" "jenkins-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
-    description = "Allow anyone on port 8080"
+    description = "Allow 9200 from our public IP"
+    from_port   = 9200
+    to_port     = 9200
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  egress {
+    description = "Allow anyone on port 32100"
     from_port   = 32100
     to_port     = 32100
     protocol    = "tcp"

@@ -32,7 +32,7 @@ variable "webserver-port" {
 }
 variable "site-name" {
   type    = string
-  default = "savingaccount"
+  default = "furnitureapp"
 }
 variable "dns-name" {
   type    = string

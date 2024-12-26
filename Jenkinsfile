@@ -259,34 +259,23 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: furnitureapp
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
         io.kompose.service: furnitureapp
     spec:
       containers:
-        - image: furnitureapp
+        - image: ktei8htop15122004/furniture-app:latest
           name: furnitureapp
           ports:
             - containerPort: 5002
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /src/logs
-              name: furnitureapp-claim0
           resources:
             limits:
-              memory: "1Gi"
-              cpu: "500m"
-            requests:
               memory: "512Mi"
-              cpu: "250m"
-      restartPolicy: Always
-      volumes:
-        - name: furnitureapp-claim0
-          persistentVolumeClaim:
-            claimName: furnitureapp-claim0
+              cpu: "256m"
+            requests:
+              memory: "128Mi"
+              cpu: "128m"
           ' > ~/deployment.yaml
             """)
     }
@@ -348,8 +337,6 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: elasticsearch
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
@@ -375,11 +362,11 @@ spec:
               name: elasticsearch-data
           resources:
             limits:
-              memory: "2Gi"
-              cpu: "1"
+              memory: "256Mi"
+              cpu: "250m"
             requests:
-              memory: "1Gi"
-              cpu: "500m"
+              memory: "128Mi"
+              cpu: "125m"
       restartPolicy: Always
       volumes:
         - name: elasticsearch-data
@@ -394,12 +381,9 @@ metadata:
   name: elasticsearch
 spec:
   ports:
-  type: NodePort
-  ports:
-    - name: "9200"
+    - name: "32000"
       port: 9200
       targetPort: 9200
-      nodePort: 9200
   selector:
     io.kompose.service: elasticsearch
 ' > ~/elastic.yaml 
@@ -451,11 +435,11 @@ spec:
               subPath: logstash.conf
           resources:
             limits:
-              memory: "2Gi"
-              cpu: "1"
+              memory: "256Mi"
+              cpu: "256m"
             requests:
               memory: "1Gi"
-              cpu: "500m"
+              cpu: "128m"
       restartPolicy: Always
       volumes:
         - configMap:
@@ -473,16 +457,13 @@ metadata:
     io.kompose.service: logstash
   name: logstash
 spec:
-  type: NodePort
   ports:
     - name: "5000"
       port: 5000
       targetPort: 5000
-      nodePort: 5000
     - name: "5044"
       port: 5044
       targetPort: 5044
-      nodePort: 5044
   selector:
     io.kompose.service: logstash
 ' > ~/logstash.yaml 
@@ -529,11 +510,11 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: "1Gi"
-              cpu: "500m"
+              memory: "256Mi"
+              cpu: "256m"
             requests:
-              memory: "512Mi"
-              cpu: "250m"
+              memory: "128Mi"
+              cpu: "128m"
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -547,7 +528,7 @@ spec:
   ports:
     - name: "5601"
       port: 5601
-      targetPort: 5601
+      targetPort: 32000
   selector:
     io.kompose.service: kibana
 ' > ~/kibana.yaml 
@@ -591,10 +572,10 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: "512Mi"
+              memory: "256Mi"
               cpu: "200m"
             requests:
-              memory: "256Mi"
+              memory: "128Mi"
               cpu: "100m"
       restartPolicy: Always
 ---
@@ -616,6 +597,37 @@ spec:
         }
     }
 }
+      stage('Setup logstash configuration'){
+       steps {
+        script {
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+        }
+      sshCommand(remote: vm1, command: """ 
+            sudo bash -c 
+            sudo mkdir -p /home/ubuntu/logstash.conf
+            echo '
+            input {
+  tcp {
+    port => 5000
+    codec => plain
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://${vm1.host}:9200"]
+    index => "express-logs-%{+yyyy.MM.dd}"
+  }
+  stdout { codec => rubydebug }
+}
+            '
+            """)
+    }
+    }
     stage('Deploying App to Kubernetes') {
       steps {
         script {

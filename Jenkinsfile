@@ -283,12 +283,22 @@ stage('Install docker and docker-compose') {
                 # Viết các lệnh cài đặt vào scripts.sh
                 cat << 'EOF' | sudo tee /home/ubuntu/scripts.sh > /dev/null
                 #!/bin/bash
+                set -euxo pipefail
 
                 # Thiết lập chế độ không tương tác cho apt-get
                 export DEBIAN_FRONTEND=noninteractive
 
+                # Sao lưu hoặc xóa tệp cấu hình containerd nếu tồn tại
+                if [ -f /etc/containerd/config.toml ]; then
+                    cp /etc/containerd/config.toml /etc/containerd/config.toml.backup
+                    rm /etc/containerd/config.toml
+                fi
+
                 # Cập nhật danh sách gói
                 apt-get update -y
+
+                # Nâng cấp các gói hiện tại
+                apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
 
                 # Cài đặt các gói cần thiết với các tùy chọn để xử lý xung đột tệp cấu hình
                 apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
@@ -302,7 +312,7 @@ stage('Install docker and docker-compose') {
                 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
                 # Thêm repository của Docker
-                echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+                echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
                 # Cập nhật lại danh sách gói
                 apt-get update -y
@@ -316,7 +326,8 @@ stage('Install docker and docker-compose') {
                     docker-compose-plugin
 
                 # Cài đặt Docker Compose (nếu cần thiết)
-                curl -L "https://github.com/docker/compose/releases/download/\$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+                LATEST_COMPOSE=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
+                curl -L "https://github.com/docker/compose/releases/download/${LATEST_COMPOSE}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
                 chmod +x /usr/local/bin/docker-compose
 
                 # Kiểm tra phiên bản Docker Compose
@@ -326,8 +337,8 @@ stage('Install docker and docker-compose') {
                 # Cấp quyền thực thi cho scripts.sh
                 sudo chmod +x /home/ubuntu/scripts.sh
 
-                # Thực thi scripts.sh
-                sudo bash /home/ubuntu/scripts.sh
+                # Thực thi scripts.sh và ghi log vào file
+                sudo bash /home/ubuntu/scripts.sh | tee /home/ubuntu/docker_install.log
             '
         ''')
     }

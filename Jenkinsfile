@@ -205,7 +205,7 @@ stage('Install Ansible and playbook') {
         }
         sshCommand(remote: vm1, command: """
             sudo bash -c
-            if [ ! -f /home/ubuntu/service.yaml ]; then
+            if [ ! -d /home/ubuntu/.ansible ]; then
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
                 sudo apt update -y || { echo 'apt update failed!'; exit 1; }

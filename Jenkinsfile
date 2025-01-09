@@ -99,23 +99,23 @@ pipeline {
     //     }
     //   }
     // }
-//     stage('Write acm-arn , alb-arn in master') {
-//     steps {
-//         script {
-//             vm1.user = 'ubuntu'
-//             vm1.password = '111111aA@'
-//             vm1.identityFile = '~/.ssh/id_rsa'
-//             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-//             cert_arn = sh(script: "terraform output -raw certificate_arn", returnStdout: true).trim()
-//             alb_arn = sh(script: "terraform output -raw alb_arn",returnStdout: true).trim()
-//         }
-//         sshCommand(remote: vm1, command: """
-//             sudo bash -c 
-//             echo ${cert_arn} > ~/cert_arn
-//             echo ${alb_arn} > ~/alb_arn
-//         """)
-//     }
-// }
+    stage('Write acm-arn , alb-arn in master') {
+    steps {
+        script {
+            vm1.user = 'ubuntu'
+            vm1.password = '111111aA@'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            cert_arn = sh(script: "terraform output -raw certificate_arn", returnStdout: true).trim()
+            alb_arn = sh(script: "terraform output -raw alb_arn",returnStdout: true).trim()
+        }
+        sshCommand(remote: vm1, command: """
+            sudo bash -c 
+            echo ${cert_arn} > ~/cert_arn
+            echo ${alb_arn} > ~/alb_arn
+        """)
+    }
+}
 //     stage('Install kubespray') {
 //     steps {
 //         script {
@@ -413,7 +413,7 @@ volumes:
   elasticsearch_data: {}
   portainer_data: {}
 
-            '
+            ' > /home/ubuntu/docker-compose.yml
             """)
           }
         }
@@ -427,7 +427,7 @@ volumes:
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-            docker compose up -d
+            sudo docker compose up -d
             """)
           }
         }

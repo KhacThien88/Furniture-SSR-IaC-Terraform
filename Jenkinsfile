@@ -371,9 +371,7 @@ services:
 
   furnitureapp:
     container_name: furnitureapp
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: ktei8htop15122004/furniture-app
     ports:
       - "5002:5002"
     restart: always
@@ -386,7 +384,14 @@ services:
       - kibana
     volumes:
       - ./nodejs-logs:/src/logs
-
+  furnitureadmin:
+    container_name: furnitureadmin
+    image: ktei8htop15122004/furnitureapp-admin
+    ports:
+      - "5001:5001"
+    restart: always
+    networks:
+      - my_network
 networks:
   my_network:
     driver: bridge

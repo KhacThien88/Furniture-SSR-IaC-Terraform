@@ -236,368 +236,7 @@ stage('Install Ansible and playbook') {
     }
 }
 
-    stage('Create Deployment App YAML') {
-      steps {
-        script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
-        }
-     sshCommand(remote: vm1, command: """ 
-     sudo bash -c 
-     echo '   
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    io.kompose.service: furnitureapp
-  name: furnitureapp
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      io.kompose.service: furnitureapp
-  template:
-    metadata:
-      labels:
-        io.kompose.service: furnitureapp
-    spec:
-      containers:
-        - image: ktei8htop15122004/furniture-app:latest
-          name: furnitureapp
-          ports:
-            - containerPort: 5002
-          resources:
-            limits:
-              memory: "512Mi"
-              cpu: "256m"
-            requests:
-              memory: "128Mi"
-              cpu: "128m"
-          ' > ~/deployment.yaml
-            """)
-    }
-      }
-
-
-    stage('Create Service App YAML') {
-    steps {
-        script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
-        }
-        sshCommand(remote: vm1, command: """ 
-    sudo bash -c 
-    echo '
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    io.kompose.service: furnitureapp
-  name: furnitureapp
-spec:
-  type: NodePort
-  ports:
-    - name: "5002"
-      port: 5002
-      targetPort: 5002
-      nodePort: 32100
-  selector:
-    io.kompose.service: furnitureapp
-      ' > ~/service.yaml
-      """
-        )
-    }
-}
-stage('Create Deployment and Service YAML for elasticsearch') {
-    steps {
-        script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()        
-           
-            sshCommand(remote: vm1, command: """
-            sudo bash -c
-            echo '
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    io.kompose.service: elasticsearch
-  name: elasticsearch
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      io.kompose.service: elasticsearch
-  template:
-    metadata:
-      labels:
-        io.kompose.service: elasticsearch
-    spec:
-      containers:
-        - env:
-            - name: ES_JAVA_OPTS
-              value: -Xms512m -Xmx512m
-            - name: discovery.type
-              value: single-node
-            - name: xpack.monitoring.enabled
-              value: "true"
-            - name: xpack.watcher.enabled
-              value: "false"
-          image: docker.elastic.co/elasticsearch/elasticsearch:7.17.2
-          name: elasticsearch-furnitureapp
-          ports:
-            - containerPort: 9200
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /usr/share/elasticsearch/data
-              name: elasticsearch-data
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "250m"
-            requests:
-              memory: "128Mi"
-              cpu: "125m"
-      restartPolicy: Always
-      volumes:
-        - name: elasticsearch-data
-          persistentVolumeClaim:
-            claimName: elasticsearch-data
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    io.kompose.service: elasticsearch
-  name: elasticsearch
-spec:
-  ports:
-    - name: "32000"
-      port: 9200
-      targetPort: 9200
-  selector:
-    io.kompose.service: elasticsearch
-' > ~/elastic.yaml 
-            """)
-        }
-    }
-}
-stage('Create Deployment and Service YAML for logstash') {
-    steps {
-        script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()        
-           
-            sshCommand(remote: vm1, command: """
-            sudo bash -c
-            echo '
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    io.kompose.service: logstash
-  name: logstash
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      io.kompose.service: logstash
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        io.kompose.service: logstash
-    spec:
-      containers:
-        - image: docker.elastic.co/logstash/logstash:8.10.0
-          name: logstash
-          ports:
-            - containerPort: 5000
-              protocol: TCP
-            - containerPort: 5044
-              protocol: TCP
-          volumeMounts:
-            - mountPath: /usr/share/logstash/pipeline/logstash.conf
-              name: logstash-cm0
-              subPath: logstash.conf
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "256m"
-            requests:
-              memory: "1Gi"
-              cpu: "128m"
-      restartPolicy: Always
-      volumes:
-        - configMap:
-            items:
-              - key: logstash.conf
-                path: logstash.conf
-            name: logstash-cm0
-          name: logstash-cm0
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    io.kompose.service: logstash
-  name: logstash
-spec:
-  ports:
-    - name: "5000"
-      port: 5000
-      targetPort: 5000
-    - name: "5044"
-      port: 5044
-      targetPort: 5044
-  selector:
-    io.kompose.service: logstash
-' > ~/logstash.yaml 
-            """)
-        }
-    }
-}
-stage('Create Deployment and Service YAML for Kibana') {
-    steps {
-        script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()        
-           
-            sshCommand(remote: vm1, command: """
-            sudo bash -c
-            echo '
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    io.kompose.service: kibana
-  name: kibana
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      io.kompose.service: kibana
-  template:
-    metadata:
-      labels:
-        io.kompose.service: kibana
-    spec:
-      containers:
-        - env:
-            - name: ELASTICSEARCH_URL
-              value: http://${vm1.host}:9200
-          image: docker.elastic.co/kibana/kibana:7.17.2
-          name: kibana-furnitureapp
-          ports:
-            - containerPort: 5601
-              protocol: TCP
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "256m"
-            requests:
-              memory: "128Mi"
-              cpu: "128m"
-      restartPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    io.kompose.service: kibana
-  name: kibana
-spec:
-  type: NodePort
-  ports:
-    - name: "5601"
-      port: 5601
-      targetPort: 32000
-  selector:
-    io.kompose.service: kibana
-' > ~/kibana.yaml 
-            """)
-        }
-    }
-}
-stage('Create Deployment and Service YAML for Redis') {
-    steps {
-        script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()        
-           
-            sshCommand(remote: vm1, command: """
-            sudo bash -c
-            echo '
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    io.kompose.service: redisdb
-  name: redisdb
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      io.kompose.service: redisdb
-  template:
-    metadata:
-      labels:
-        io.kompose.service: redisdb
-    spec:
-      containers:
-        - image: redis:latest
-          name: redisdb
-          ports:
-            - containerPort: 6379
-              protocol: TCP
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "200m"
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-      restartPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    io.kompose.service: redisdb
-  name: redisdb
-spec:
-  ports:
-    - name: "6379"
-      port: 6379
-      targetPort: 6379
-  selector:
-    io.kompose.service: redisdb
-' > ~/redis.yaml 
-            """)
-        }
-    }
-}
-      stage('Setup logstash configuration'){
+    stage('Setup logstash configuration'){
        steps {
         script {
             vm1.user = 'ubuntu'
@@ -608,7 +247,7 @@ spec:
         }
       sshCommand(remote: vm1, command: """ 
             sudo bash -c 
-            sudo mkdir -p /home/ubuntu/logstash.conf
+            sudo touch /home/ubuntu/logstash.conf
             echo '
             input {
   tcp {
@@ -624,10 +263,157 @@ output {
   }
   stdout { codec => rubydebug }
 }
-            '
+            ' > /home/ubuntu/logstash.conf
             """)
     }
+  }
+  stage('Install docker and docker-compose'){
+       steps {
+        script {
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+        }
+      sshCommand(remote: vm1, command: """ 
+            sudo bash -c 
+            sudo touch /home/ubuntu/scripts.sh
+            echo '
+            sudo apt-get update
+            sudo apt-get install \
+                ca-certificates \
+                curl \
+                gnupg \
+                lsb-release
+            sudo mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+            sudo apt-get update
+            sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+            sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker-compose --version
+            ' > /home/ubuntu/scripts.sh
+            """)
     }
+  }
+  stage('Add Docker-Compose file') {
+      steps {
+        script {
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+        }
+        sshCommand(remote: vm1, command: """ 
+            sudo bash -c 
+            sudo touch /home/ubuntu/docker-compose.yml
+            echo '
+version: "3.8"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.2
+    container_name: elasticsearch-furnitureapp
+    restart: always
+    environment:
+      - xpack.monitoring.enabled=true
+      - xpack.watcher.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - my_network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: logstash
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5000:5000"
+      - "5044:5044"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - my_network
+
+  kibana:
+    container_name: kibana-furnitureapp
+    image: docker.elastic.co/kibana/kibana:7.17.2
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    networks:
+      - my_network
+
+  portainer:
+    container_name: portainerio
+    image: portainer/portainer-ce:latest
+    ports:
+      - "8000:8000"
+      - "9999:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: always
+    networks:
+      - my_network
+
+  redisdb:
+    container_name: redisdb
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - my_network
+
+  furnitureapp:
+    container_name: furnitureapp
+    image: ktei8htop15122004/furniture-app:latest
+    ports:
+      - "5002:5002"
+    restart: always
+    networks:
+      - my_network
+    depends_on:
+      - redisdb
+      - elasticsearch
+      - logstash
+      - kibana
+    volumes:
+      - ./nodejs-logs:/src/logs
+  furnitureappadmin:
+    container_name: furnitureappadmin
+    image: ktei8htop15122004/furnitureapp-admin:latest
+    ports:
+      - "5001:5001"
+    restart: always
+    networks:
+      - my_network
+networks:
+  my_network:
+    driver: bridge
+
+volumes:
+  elasticsearch_data: {}
+  portainer_data: {}
+
+            '
+            """)
+          }
+        }
     stage('Deploying App to Kubernetes') {
       steps {
         script {
@@ -638,12 +424,7 @@ output {
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-            sudo kubectl apply -f ~/deployment.yaml
-            sudo kubectl apply -f ~/service.yaml
-            sudo kubectl apply -f ~/elastic.yaml
-            sudo kubectl apply -f ~/logstash.yaml
-            sudo kubectl apply -f ~/kibana.yaml
-            sudo kubectl apply -f ~/redis.yaml
+            docker compose up -d
             """)
           }
         }
@@ -701,7 +482,13 @@ server {
     listen 80;
 
     location / {
-        proxy_pass http://${vm1.host}:32100;
+        proxy_pass http://${vm1.host}:5002;
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
+    }
+    location /admin {
+        proxy_pass http://${vm1.host}:5001;
         proxy_connect_timeout 60s;
         proxy_read_timeout 60s;
         proxy_send_timeout 60s;

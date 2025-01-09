@@ -473,7 +473,7 @@ server {
     server_name furnitureapp.khacthienit.click;
 
     location / {
-        proxy_pass http://3.26.177.108:5002;
+        proxy_pass http://${vm1.host}:32100;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -493,7 +493,7 @@ server {
     server_name furnitureadmin.khacthienit.click;
 
     location / {
-        proxy_pass http://3.26.177.108:5001;
+        proxy_pass http://${vm1.host}:32100;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -510,9 +510,6 @@ server {
 
 server {
     listen 80;
-    # Optional: Define a server_name or use default_server
-    # server_name yourdomain.com;
-
     location /healthz {
         root /var/www/html;
     }

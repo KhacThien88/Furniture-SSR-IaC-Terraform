@@ -277,8 +277,8 @@ stage('Install Docker and Docker Compose') {
                 }
                 sshCommand(remote: vm1, command: """ 
                     set -x
-                    sudo DEBIAN_FRONTEND=noninteractive apt-get update
-                    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \\
+                    sudo apt-get update
+                    sudo apt-get install -y \\
                         apt-transport-https \\
                         ca-certificates \\
                         curl \\
@@ -287,18 +287,18 @@ stage('Install Docker and Docker Compose') {
 
                     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
-                    sudo DEBIAN_FRONTEND=noninteractive add-apt-repository \\
+                    sudo add-apt-repository \\
                        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \\
                        \$(lsb_release -cs) \\
                        stable"
 
-                    sudo DEBIAN_FRONTEND=noninteractive apt-get update
-                    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \\
+                    sudo apt-get update
+                    sudo apt-get install -y \\
                         -o Dpkg::Options::="--force-confdef" \\
                         -o Dpkg::Options::="--force-confold" \\
                         docker-ce docker-ce-cli containerd.io
 
-                    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose containerd \
+                    sudo apt-get install -y docker-compose containerd \
                     -o Dpkg::Options::="--force-confnew"
 
 

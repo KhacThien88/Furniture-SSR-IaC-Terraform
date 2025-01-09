@@ -266,7 +266,7 @@ stage('Setup logstash configuration') {
     }
 }
 
-  stage('Install docker and docker-compose') {
+stage('Install docker and docker-compose') {
     steps {
         script {
             vm1.user = 'ubuntu'
@@ -277,33 +277,62 @@ stage('Setup logstash configuration') {
         }
         sshCommand(remote: vm1, command: ''' 
             sudo bash -c '
-                # Create the scripts.sh file
+                # Tạo file scripts.sh
                 sudo touch /home/ubuntu/scripts.sh
 
-                # Write the installation commands to scripts.sh
-                echo '
-                sudo apt-get update
-                sudo apt-get install -y \
+                # Viết các lệnh cài đặt vào scripts.sh
+                cat << 'EOF' | sudo tee /home/ubuntu/scripts.sh > /dev/null
+                #!/bin/bash
+
+                # Thiết lập chế độ không tương tác cho apt-get
+                export DEBIAN_FRONTEND=noninteractive
+
+                # Cập nhật danh sách gói
+                apt-get update -y
+
+                # Cài đặt các gói cần thiết với các tùy chọn để xử lý xung đột tệp cấu hình
+                apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
                     ca-certificates \
                     curl \
                     gnupg \
                     lsb-release
-                sudo mkdir -p /etc/apt/keyrings
-                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-                echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-                sudo apt-get update
-                sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-                sudo curl -L "https://github.com/docker/compose/releases/download/\$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
-                sudo chmod +x /usr/local/bin/docker-compose
-                docker-compose --version
-                ' > /home/ubuntu/scripts.sh
 
-                # Execute the scripts.sh file
+                # Thêm khóa GPG của Docker
+                mkdir -p /etc/apt/keyrings
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+                # Thêm repository của Docker
+                echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+                # Cập nhật lại danh sách gói
+                apt-get update -y
+
+                # Cài đặt Docker Engine và các thành phần liên quan
+                apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+                    docker-ce \
+                    docker-ce-cli \
+                    containerd.io \
+                    docker-buildx-plugin \
+                    docker-compose-plugin
+
+                # Cài đặt Docker Compose (nếu cần thiết)
+                curl -L "https://github.com/docker/compose/releases/download/\$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+                chmod +x /usr/local/bin/docker-compose
+
+                # Kiểm tra phiên bản Docker Compose
+                docker-compose --version
+                EOF
+
+                # Cấp quyền thực thi cho scripts.sh
+                sudo chmod +x /home/ubuntu/scripts.sh
+
+                # Thực thi scripts.sh
                 sudo bash /home/ubuntu/scripts.sh
             '
         ''')
     }
 }
+
 
   stage('Add Docker-Compose file') {
       steps {

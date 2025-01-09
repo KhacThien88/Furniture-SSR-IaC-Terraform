@@ -313,9 +313,8 @@ stage('Install Docker and Docker Compose') {
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """ 
-            sudo bash -c 
-            sudo touch /home/ubuntu/docker-compose.yml
-            sudo echo '
+     sudo bash -c    
+     echo "   
 version: "3.8"
 
 services:
@@ -384,7 +383,9 @@ services:
 
   furnitureapp:
     container_name: furnitureapp
-    image: ktei8htop15122004/furniture-app:latest
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     ports:
       - "5002:5002"
     restart: always
@@ -397,14 +398,7 @@ services:
       - kibana
     volumes:
       - ./nodejs-logs:/src/logs
-  furnitureappadmin:
-    container_name: furnitureappadmin
-    image: ktei8htop15122004/furnitureapp-admin:latest
-    ports:
-      - "5001:5001"
-    restart: always
-    networks:
-      - my_network
+
 networks:
   my_network:
     driver: bridge
@@ -413,7 +407,7 @@ volumes:
   elasticsearch_data: {}
   portainer_data: {}
 
-            ' > /home/ubuntu/docker-compose.yml
+          " > ~/docker-compose.yaml
             """)
           }
         }

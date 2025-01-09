@@ -269,7 +269,13 @@ stage('Setup logstash configuration') {
  stage('Install Docker and Docker Compose') {
             steps {
                 script {
-                    sh '''
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+            }
+            sshCommand(remote: vm1, command: """ 
                         sudo apt-get update
                         sudo apt-get install -y \
                             apt-transport-https \
@@ -277,36 +283,19 @@ stage('Setup logstash configuration') {
                             curl \
                             gnupg-agent \
                             software-properties-common
-                    '''
-                    
-                    sh '''
                         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-                    '''
-                    
-                    sh '''
                         sudo add-apt-repository \
                            "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
                            $(lsb_release -cs) \
                            stable"
                         sudo apt-get update
-                    '''
-                    
-                    sh '''
                         sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-                    '''
-                    
-                    sh 'docker --version'
-                    
-                    sh '''
                         sudo curl -L "https://github.com/docker/compose/releases/download/2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
                         sudo chmod +x /usr/local/bin/docker-compose
-                    '''
-                    
-                    sh 'docker-compose --version'
-                }
-            }
+                        docker-compose --version'
+            """)
         }
-
+ }
   stage('Add Docker-Compose file') {
       steps {
         script {

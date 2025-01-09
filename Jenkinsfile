@@ -267,8 +267,8 @@ output {
             """)
     }
   }
-  stage('Install docker and docker-compose'){
-       steps {
+  stage('Install docker and docker-compose') {
+    steps {
         script {
             vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
@@ -276,30 +276,36 @@ output {
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
-      sshCommand(remote: vm1, command: """ 
-            sudo bash -c 
-            sudo touch /home/ubuntu/scripts.sh
-            echo '
-            sudo apt-get update
-            sudo apt-get install \
-                ca-certificates \
-                curl \
-                gnupg \
-                lsb-release
-            sudo mkdir -p /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            echo \
-            "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \\
-            \$(lsb_release -cs) stable"| sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-            sudo apt-get update
-            sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-            sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            docker-compose --version
-            ' > /home/ubuntu/scripts.sh
-            """)
+        sshCommand(remote: vm1, command: ''' 
+            sudo bash -c '
+                # Create the scripts.sh file
+                sudo touch /home/ubuntu/scripts.sh
+
+                # Write the installation commands to scripts.sh
+                echo '
+                sudo apt-get update
+                sudo apt-get install -y \
+                    ca-certificates \
+                    curl \
+                    gnupg \
+                    lsb-release
+                sudo mkdir -p /etc/apt/keyrings
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+                echo "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+                sudo apt-get update
+                sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+                sudo curl -L "https://github.com/docker/compose/releases/download/\$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+                sudo chmod +x /usr/local/bin/docker-compose
+                docker-compose --version
+                ' > /home/ubuntu/scripts.sh
+
+                # Execute the scripts.sh file
+                sudo bash /home/ubuntu/scripts.sh
+            '
+        ''')
     }
-  }
+}
+
   stage('Add Docker-Compose file') {
       steps {
         script {

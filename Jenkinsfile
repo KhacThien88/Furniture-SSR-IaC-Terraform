@@ -236,8 +236,8 @@ pipeline {
 //     }
 // }
 
-    stage('Setup logstash configuration'){
-       steps {
+stage('Setup logstash configuration') {
+    steps {
         script {
             vm1.user = 'ubuntu'
             vm1.identityFile = '~/.ssh/id_rsa'
@@ -245,27 +245,27 @@ pipeline {
             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
-      sshCommand(remote: vm1, command: """ 
-            sudo touch /home/ubuntu/logstash.conf
-            sudo echo '
+        sshCommand(remote: vm1, command: """ 
+            echo '
             input {
-  tcp {
-    port => 5000
-    codec => plain
-  }
+              tcp {
+                port => 5000
+                codec => plain
+              }
+            }
+            
+            output {
+              elasticsearch {
+                hosts => ["http://${vm1.host}:9200"]
+                index => "express-logs-%{+yyyy.MM.dd}"
+              }
+              stdout { codec => rubydebug }
+            }
+            ' | sudo tee /home/ubuntu/logstash.conf > /dev/null
+        """)
+    }
 }
 
-output {
-  elasticsearch {
-    hosts => ["http://${vm1.host}:9200"]
-    index => "express-logs-%{+yyyy.MM.dd}"
-  }
-  stdout { codec => rubydebug }
-}
-            ' > /home/ubuntu/logstash.conf
-            """)
-    }
-  }
   stage('Install docker and docker-compose') {
     steps {
         script {

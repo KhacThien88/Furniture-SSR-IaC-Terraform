@@ -285,7 +285,7 @@ stage('Install Docker and Docker Compose') {
                         gnupg-agent \\
                         software-properties-common
 
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
                     sudo add-apt-repository \\
                        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \\
@@ -299,7 +299,7 @@ stage('Install Docker and Docker Compose') {
                         docker-ce docker-ce-cli containerd.io
 
                     sudo apt-get install -y docker-compose containerd \
-                    -o Dpkg::Options::="--force-confnew"
+                    -o Dpkg::Options::="--force-confold"
 
 
                     docker-compose --version

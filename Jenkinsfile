@@ -315,7 +315,7 @@ stage('Install Docker and Docker Compose') {
         sshCommand(remote: vm1, command: """ 
      sudo bash -c    
      echo "   
-version: "3.8"
+version: '3.8'
 
 services:
   elasticsearch:

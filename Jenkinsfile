@@ -344,7 +344,6 @@ stage('Install docker and docker-compose') {
     }
 }
 
-
   stage('Add Docker-Compose file') {
       steps {
         script {

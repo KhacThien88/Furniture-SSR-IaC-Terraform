@@ -266,83 +266,46 @@ stage('Setup logstash configuration') {
     }
 }
 
-stage('Install docker and docker-compose') {
-    steps {
-        script {
-            vm1.user = 'ubuntu'
-            vm1.identityFile = '~/.ssh/id_rsa'
-            vm1.password = '111111aA@'
-            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+ stage('Install Docker and Docker Compose') {
+            steps {
+                script {
+                    sh '''
+                        sudo apt-get update
+                        sudo apt-get install -y \
+                            apt-transport-https \
+                            ca-certificates \
+                            curl \
+                            gnupg-agent \
+                            software-properties-common
+                    '''
+                    
+                    sh '''
+                        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+                    '''
+                    
+                    sh '''
+                        sudo add-apt-repository \
+                           "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+                           $(lsb_release -cs) \
+                           stable"
+                        sudo apt-get update
+                    '''
+                    
+                    sh '''
+                        sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+                    '''
+                    
+                    sh 'docker --version'
+                    
+                    sh '''
+                        sudo curl -L "https://github.com/docker/compose/releases/download/2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                        sudo chmod +x /usr/local/bin/docker-compose
+                    '''
+                    
+                    sh 'docker-compose --version'
+                }
+            }
         }
-        sshCommand(remote: vm1, command: ''' 
-            sudo bash -c '
-    # Tạo file scripts.sh
-    sudo touch /home/ubuntu/scripts.sh
-
-    # Viết các lệnh cài đặt vào scripts.sh
-    cat << EOF | sudo tee /home/ubuntu/scripts.sh > /dev/null
-    #!/bin/bash
-    set -euxo pipefail
-
-    # Thiết lập chế độ không tương tác cho apt-get
-    export DEBIAN_FRONTEND=noninteractive
-
-    # Sao lưu hoặc xóa tệp cấu hình containerd nếu tồn tại
-    if [ -f /etc/containerd/config.toml ]; then
-        cp /etc/containerd/config.toml /etc/containerd/config.toml.backup
-        rm /etc/containerd/config.toml
-    fi
-
-    # Cập nhật danh sách gói
-    apt-get update -y
-
-    # Nâng cấp các gói hiện tại
-    apt-get upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
-
-    # Cài đặt các gói cần thiết với các tùy chọn để xử lý xung đột tệp cấu hình
-    apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-                    ca-certificates \
-                    curl \
-                    gnupg \
-                    lsb-release
-
-    # Thêm khóa GPG của Docker
-    mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-
-    # Thêm repository của Docker
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-    # Cập nhật lại danh sách gói
-    apt-get update -y
-
-    # Cài đặt Docker Engine và các thành phần liên quan
-    apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-                    docker-ce \
-                    docker-ce-cli \
-                    containerd.io \
-                    docker-buildx-plugin \
-                    docker-compose-plugin
-
-    # Cài đặt Docker Compose (nếu cần thiết)
-    LATEST_COMPOSE=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
-    curl -L "https://github.com/docker/compose/releases/download/${LATEST_COMPOSE}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
-
-    # Kiểm tra phiên bản Docker Compose
-    docker-compose --version
-    EOF
-
-    # Cấp quyền thực thi cho scripts.sh
-    sudo chmod +x /home/ubuntu/scripts.sh
-
-    # Thực thi scripts.sh và ghi log vào file
-    sudo bash /home/ubuntu/scripts.sh | tee /home/ubuntu/docker_install.log
-'
-        ''')
-    }
-}
 
   stage('Add Docker-Compose file') {
       steps {

@@ -473,7 +473,7 @@ server {
     server_name furnitureapp.khacthienit.click;
 
     location / {
-        proxy_pass http://${vm1.host}:32100;
+        proxy_pass http://${vm1.host}:5002;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -493,7 +493,7 @@ server {
     server_name furnitureadmin.khacthienit.click;
 
     location / {
-        proxy_pass http://${vm1.host}:32100;
+        proxy_pass http://${vm1.host}:5001;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;

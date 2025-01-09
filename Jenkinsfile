@@ -277,8 +277,8 @@ stage('Install Docker and Docker Compose') {
                 }
                 sshCommand(remote: vm1, command: """ 
                     set -x
-                    sudo apt-get update
-                    sudo apt-get install -y \\
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get update
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \\
                         apt-transport-https \\
                         ca-certificates \\
                         curl \\
@@ -287,15 +287,14 @@ stage('Install Docker and Docker Compose') {
 
                     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
-                    sudo add-apt-repository \\
+                    sudo DEBIAN_FRONTEND=noninteractive add-apt-repository \\
                        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \\
                        \$(lsb_release -cs) \\
                        stable"
 
-                    sudo apt-get update
-                    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get update
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io
 
-                    # Sửa URL bằng cách thêm 'v' trước số phiên bản
                     sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
                     sudo chmod +x /usr/local/bin/docker-compose
 

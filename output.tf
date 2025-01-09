@@ -22,6 +22,9 @@ output "private_ip_address_vm_2" {
 output "certificate_arn" {
   value = module.route53-acm.arn
 }
+output "certificate_arn_2" {
+  value = module.route53-acm.arn-2
+}
 output "alb_arn" {
   value = module.lb.arn
 }

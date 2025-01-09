@@ -31,8 +31,8 @@ variable "webserver-port" {
   default = 80
 }
 variable "site-name" {
-  type    = string
-  default = "furnitureapp"
+  type    = list(string)
+  default = ["furnitureapp","furnitureadmin"]
 }
 variable "dns-name" {
   type    = string
@@ -53,6 +53,14 @@ variable "cidr_block_master_subnet_1" {
 variable "cidr_block_master_subnet_2" {
   type    = string
   default = "10.0.2.0/24"
+}
+variable "cidr_block_master_subnet_3" {
+  type    = string
+  default = "10.0.3.0/24"
+}
+variable "cidr_block_master_subnet_4" {
+  type    = string
+  default = "10.0.4.0/24"
 }
 variable "cidr_block_worker_subnet_1" {
   type    = string

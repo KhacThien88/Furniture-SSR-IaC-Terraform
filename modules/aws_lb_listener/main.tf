@@ -4,11 +4,13 @@ resource "aws_lb_listener" "lb-https-listener" {
   port              = "443"
   protocol          = "HTTPS"
   certificate_arn   = var.acm-arn
+  
   default_action {
     type             = "forward"
     target_group_arn = var.alb-target-group-arn
   }
 }
+
 resource "aws_lb_listener" "lb-http-listener" {
   load_balancer_arn = var.alb-arn
   port              = "80"

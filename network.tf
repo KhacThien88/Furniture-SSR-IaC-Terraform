@@ -68,6 +68,28 @@ module "subnet_master_2" {
   vpc_id            = module.vpc_master.id_vpc
 
 }
+module "subnet_master_3" {
+  source = "./modules/aws_subnet"
+  providers = {
+    aws = aws.region-master
+  }
+  az                = element(module.available_master.names,0)
+  cidr_block_subnet = var.cidr_block_master_subnet_3
+  tag               = "subnet_master_3"
+  vpc_id            = module.vpc_master.id_vpc
+
+}
+module "subnet_master_4" {
+  source = "./modules/aws_subnet"
+  providers = {
+    aws = aws.region-master
+  }
+  az                = element(module.available_master.names,1)
+  cidr_block_subnet = var.cidr_block_master_subnet_4
+  tag               = "subnet_master_4"
+  vpc_id            = module.vpc_master.id_vpc
+
+}
 module "subnet_worker_1" {
   source = "./modules/aws_subnet"
   providers = {

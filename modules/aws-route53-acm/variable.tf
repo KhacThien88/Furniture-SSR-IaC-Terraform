@@ -10,3 +10,12 @@ variable "lb_dns_name" {
 variable "lb_zone_id" {
   type = string
 }
+variable "site-name-2" {
+  type = string
+}
+variable "lb_zone_id_2" {
+  type = string
+}
+variable "lb_dns_name_2" {
+  type = string
+}

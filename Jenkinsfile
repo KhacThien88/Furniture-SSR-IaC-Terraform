@@ -470,19 +470,48 @@ volumes:
             sudo echo '
 server {
     listen 80;
+    server_name furnitureapp.khacthienit.click;
 
     location / {
-        proxy_pass http://${vm1.host}:5002;
+        proxy_pass http://3.26.177.108:5002;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_connect_timeout 60s;
         proxy_read_timeout 60s;
         proxy_send_timeout 60s;
     }
-    location /admin {
-        proxy_pass http://${vm1.host}:5001;
+
+    location /healthz {
+        root /var/www/html;
+    }
+}
+
+server {
+    listen 80;
+    server_name furnitureadmin.khacthienit.click;
+
+    location / {
+        proxy_pass http://3.26.177.108:5001;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_connect_timeout 60s;
         proxy_read_timeout 60s;
         proxy_send_timeout 60s;
     }
+
+    location /healthz {
+        root /var/www/html;
+    }
+}
+
+server {
+    listen 80;
+    # Optional: Define a server_name or use default_server
+    # server_name yourdomain.com;
 
     location /healthz {
         root /var/www/html;

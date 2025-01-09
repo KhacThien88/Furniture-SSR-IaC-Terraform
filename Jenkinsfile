@@ -269,15 +269,11 @@ stage('Setup logstash configuration') {
 stage('Install Docker and Docker Compose') {
             steps {
                 script {
-                    // Khai báo thông tin cho các VM
-                    vm1 = [:]
-                    vm1.user = 'ubuntu'
-                    vm1.identityFile = '~/.ssh/id_rsa'
-                    vm1.password = '111111aA@'
-                    vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-
-                    vm2 = [:]
-                    vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+                     vm1.user = 'ubuntu'
+                     vm1.identityFile = '~/.ssh/id_rsa'
+                     vm1.password = '111111aA@'
+                     vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+                     vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
                 }
                 sshCommand(remote: vm1, command: """ 
                     sudo apt-get update

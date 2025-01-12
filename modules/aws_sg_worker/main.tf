@@ -43,6 +43,13 @@ resource "aws_security_group" "jenkins-sg-worker" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Allow traffic from us-east-1"
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "-1"
     cidr_blocks = ["10.0.1.0/24"]
   }
   egress {
@@ -72,6 +79,13 @@ resource "aws_security_group" "jenkins-sg-worker" {
     to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    description = "Allow 80 from our public IP"
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
   }
   egress {
     description = "Allow anyone on port 32100"

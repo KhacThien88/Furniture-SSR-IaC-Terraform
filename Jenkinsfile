@@ -205,7 +205,6 @@ stage('Install Ansible and playbook') {
         }
         sshCommand(remote: vm1, command: """
                 sudo bash -c
-              if [ ! -d /home/ubuntu/.ansible ]; then
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
                 sudo apt update -y || { echo 'apt update failed!'; exit 1; }
@@ -228,9 +227,6 @@ stage('Install Ansible and playbook') {
                 echo 'Running kubespray playbook...'
                 cd ~/kubespray
                 ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini --become --become-user=root cluster.yml
-              else 
-                echo "Already running kubernetes"
-              fi
             """)
         
     }
@@ -281,10 +277,10 @@ stage('Install Docker and Docker Compose') {
             curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
             echo "deb [signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
             sudo apt update -y
-            sudo apt install docker-ce -y
+            sudo apt install docker-ce -y Dpkg::Options::="--force-confnew"
             sudo systemctl start docker
             sudo systemctl enable docker
-            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose -y
             sudo chmod +x /usr/local/bin/docker-compose
             docker -v
             docker-compose -v

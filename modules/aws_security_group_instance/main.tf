@@ -32,6 +32,13 @@ resource "aws_security_group" "jenkins-sg" {
     cidr_blocks = [var.external_ip]
   }
   ingress {
+    description = "Allow 3100 from our public IP"
+    from_port   = 3100
+    to_port     = 3100
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  ingress {
     description = "Allow 5002 from our public IP"
     from_port   = 5001
     to_port     = 5001

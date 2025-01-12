@@ -89,6 +89,13 @@ resource "aws_security_group" "jenkins-sg" {
     cidr_blocks = [var.external_ip]
   }
   ingress {
+    description = "Allow 9100 from our public IP"
+    from_port   = 9080
+    to_port     = 9080
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  ingress {
     description = "Allow 9200 from our public IP"
     from_port   = 9090
     to_port     = 9090
@@ -138,6 +145,20 @@ resource "aws_security_group" "jenkins-sg" {
     cidr_blocks = [var.external_ip]
   }
   egress {
+    description = "Allow 3000 from our public IP"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  egress {
+    description = "Allow 3000 from our public IP"
+    from_port   = 3100
+    to_port     = 3100
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
+  }
+  egress {
     description = "Allow 5002 from our public IP"
     from_port   = 5001
     to_port     = 5001
@@ -178,6 +199,13 @@ resource "aws_security_group" "jenkins-sg" {
     to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    description = "Allow 9100 from our public IP"
+    from_port   = 9080
+    to_port     = 9080
+    protocol    = "tcp"
+    cidr_blocks = [var.external_ip]
   }
   egress {
     description = "Allow 9100 from our public IP"

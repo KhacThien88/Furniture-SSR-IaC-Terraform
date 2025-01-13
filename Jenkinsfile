@@ -205,6 +205,7 @@ stage('Install Ansible and playbook') {
         }
         sshCommand(remote: vm1, command: """
                 sudo bash -c
+              if [ ! -d /home/ubuntu/.ansible ]; then
                 set -e  # Exit on any error
                 echo 'Updating package lists...'
                 sudo apt update -y || { echo 'apt update failed!'; exit 1; }
@@ -227,6 +228,9 @@ stage('Install Ansible and playbook') {
                 echo 'Running kubespray playbook...'
                 cd ~/kubespray
                 ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini --become --become-user=root cluster.yml
+              else 
+                echo "Already running kubernetes"
+              fi
             """)
         
     }

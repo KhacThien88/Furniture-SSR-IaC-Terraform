@@ -239,7 +239,7 @@ resource "aws_security_group" "jenkins-sg" {
     description = "Allow 9100 from our public IP"
     from_port   = 9100
     to_port     = 9100
-    protocol    = "-1"
+    protocol    = "tcp"
     cidr_blocks = [var.external_ip]
   }
   

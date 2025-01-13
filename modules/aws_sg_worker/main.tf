@@ -49,7 +49,7 @@ resource "aws_security_group" "jenkins-sg-worker" {
     description = "Allow traffic from us-east-1"
     from_port   = 9100
     to_port     = 9100
-    protocol    = "-1"
+    protocol    = "tcp"
     cidr_blocks = ["10.0.1.0/24"]
   }
   egress {

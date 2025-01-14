@@ -13,9 +13,6 @@ variable "lb_zone_id" {
 variable "site-name-2" {
   type = string
 }
-variable "site-name-3" {
-  type = string
-}
 variable "lb_zone_id_2" {
   type = string
 }

@@ -20,7 +20,7 @@ variable "workers-count" {
 }
 variable "instance-type" {
   type    = string
-  default = "t3.small"
+  default = "t3.large"
 }
 variable "instance-type-master" {
   type    = string

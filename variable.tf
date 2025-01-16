@@ -20,11 +20,11 @@ variable "workers-count" {
 }
 variable "instance-type" {
   type    = string
-  default = "t3.xlarge"
+  default = "t3.2xlarge"
 }
 variable "instance-type-master" {
   type    = string
-  default = "t3.medium"
+  default = "t3.large"
 }
 variable "webserver-port" {
   type    = number

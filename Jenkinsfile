@@ -266,158 +266,158 @@ stage('Setup logstash configuration') {
     }
 }
 
-// stage('Install Docker and Docker Compose') {
-//             steps {
-//                 script {
-//                      vm1.user = 'ubuntu'
-//                      vm1.identityFile = '~/.ssh/id_rsa'
-//                      vm1.password = '111111aA@'
-//                      vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-//                      vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
-//                 }
-//                  sshCommand(remote: vm1, command: """ 
-//             set -x
-//             sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-//             curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-//             echo "deb [signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-//             sudo apt update -y
-//             sudo apt install docker-ce -y
-//             sudo systemctl start docker
-//             sudo systemctl enable docker
-//             sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose -y
-//             sudo chmod +x /usr/local/bin/docker-compose
-//             docker -v
-//             docker compose -v
-//         """)
-//             }
-//         }
-//   stage('Add Docker-Compose file') {
-//       steps {
-//         script {
-//             vm1.user = 'ubuntu'
-//             vm1.identityFile = '~/.ssh/id_rsa'
-//             vm1.password = '111111aA@'
-//             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-//             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
-//         }
-//         sshCommand(remote: vm1, command: """ 
-//      sudo bash -c    
-//      echo "   
-// version: '3.8'
+stage('Install Docker and Docker Compose') {
+            steps {
+                script {
+                     vm1.user = 'ubuntu'
+                     vm1.identityFile = '~/.ssh/id_rsa'
+                     vm1.password = '111111aA@'
+                     vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+                     vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+                }
+                 sshCommand(remote: vm1, command: """ 
+            set -x
+            sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+            echo "deb [signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+            sudo apt update -y
+            sudo apt install docker-ce -y
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose -y
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker -v
+            docker compose -v
+        """)
+            }
+        }
+  stage('Add Docker-Compose file') {
+      steps {
+        script {
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+        }
+        sshCommand(remote: vm1, command: """ 
+     sudo bash -c    
+     echo "   
+version: '3.8'
 
-// services:
-//   elasticsearch:
-//     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.2
-//     container_name: elasticsearch-furnitureapp
-//     restart: always
-//     environment:
-//       - xpack.monitoring.enabled=true
-//       - xpack.watcher.enabled=false
-//       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-//       - discovery.type=single-node
-//     ports:
-//       - "9200:9200"
-//     volumes:
-//       - elasticsearch_data:/usr/share/elasticsearch/data
-//     networks:
-//       - my_network
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.2
+    container_name: elasticsearch-furnitureapp
+    restart: always
+    environment:
+      - xpack.monitoring.enabled=true
+      - xpack.watcher.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - my_network
 
-//   logstash:
-//     image: docker.elastic.co/logstash/logstash:8.10.0
-//     container_name: logstash
-//     depends_on:
-//       - elasticsearch
-//     ports:
-//       - "5000:5000"
-//       - "5044:5044"
-//     volumes:
-//       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-//     networks:
-//       - my_network
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: logstash
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5000:5000"
+      - "5044:5044"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - my_network
 
-//   kibana:
-//     container_name: kibana-furnitureapp
-//     image: docker.elastic.co/kibana/kibana:7.17.2
-//     environment:
-//       - ELASTICSEARCH_URL=http://elasticsearch:9200
-//     depends_on:
-//       - elasticsearch
-//     ports:
-//       - "5601:5601"
-//     networks:
-//       - my_network
+  kibana:
+    container_name: kibana-furnitureapp
+    image: docker.elastic.co/kibana/kibana:7.17.2
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    networks:
+      - my_network
 
-//   portainer:
-//     container_name: portainerio
-//     image: portainer/portainer-ce:latest
-//     ports:
-//       - "8000:8000"
-//       - "9999:9000"
-//     volumes:
-//       - /var/run/docker.sock:/var/run/docker.sock
-//       - portainer_data:/data
-//     restart: always
-//     networks:
-//       - my_network
+  portainer:
+    container_name: portainerio
+    image: portainer/portainer-ce:latest
+    ports:
+      - "8000:8000"
+      - "9999:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: always
+    networks:
+      - my_network
 
-//   redisdb:
-//     container_name: redisdb
-//     image: redis:latest
-//     restart: always
-//     ports:
-//       - "6379:6379"
-//     networks:
-//       - my_network
+  redisdb:
+    container_name: redisdb
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - my_network
 
-//   furnitureapp:
-//     container_name: furnitureapp
-//     image: ktei8htop15122004/furniture-app
-//     ports:
-//       - "5002:5002"
-//     restart: always
-//     networks:
-//       - my_network
-//     depends_on:
-//       - redisdb
-//       - elasticsearch
-//       - logstash
-//       - kibana
-//     volumes:
-//       - ./nodejs-logs:/src/logs
-//   furnitureadmin:
-//     container_name: furnitureadmin
-//     image: ktei8htop15122004/furnitureapp-admin
-//     ports:
-//       - "5001:5001"
-//     restart: always
-//     networks:
-//       - my_network
-// networks:
-//   my_network:
-//     driver: bridge
+  furnitureapp:
+    container_name: furnitureapp
+    image: ktei8htop15122004/furniture-app
+    ports:
+      - "5002:5002"
+    restart: always
+    networks:
+      - my_network
+    depends_on:
+      - redisdb
+      - elasticsearch
+      - logstash
+      - kibana
+    volumes:
+      - ./nodejs-logs:/src/logs
+  furnitureadmin:
+    container_name: furnitureadmin
+    image: ktei8htop15122004/furnitureapp-admin
+    ports:
+      - "5001:5001"
+    restart: always
+    networks:
+      - my_network
+networks:
+  my_network:
+    driver: bridge
 
-// volumes:
-//   elasticsearch_data: {}
-//   portainer_data: {}
+volumes:
+  elasticsearch_data: {}
+  portainer_data: {}
 
-//           " > ~/docker-compose.yaml
-//             """)
-//           }
-//         }
-//     stage('Deploying App to Kubernetes') {
-//       steps {
-//         script {
-//             vm1.user = 'ubuntu'
-//             vm1.identityFile = '~/.ssh/id_rsa'
-//             vm1.password = '111111aA@'
-//             vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
-//             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
-//         }
-//         sshCommand(remote: vm1, command: """ 
-//             sudo docker compose up -d
-//             """)
-//           }
-//         }
+          " > ~/docker-compose.yaml
+            """)
+          }
+        }
+    stage('Deploying App to Kubernetes') {
+      steps {
+        script {
+            vm1.user = 'ubuntu'
+            vm1.identityFile = '~/.ssh/id_rsa'
+            vm1.password = '111111aA@'
+            vm1.host = sh(script: "terraform output -raw public_ip_vm_1", returnStdout: true).trim()
+            vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
+        }
+        sshCommand(remote: vm1, command: """ 
+            sudo docker compose up -d
+            """)
+          }
+        }
     stage('Add healthcheck file to ALB to Kubernetes Cluster'){
       steps {
         script {

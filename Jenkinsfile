@@ -204,7 +204,7 @@ stage('Install Ansible and playbook') {
             vm2.host = sh(script: "terraform output -raw public_ip_vm_2", returnStdout: true).trim()
         }
         sshCommand(remote: vm1, command: """
-              if [ ! -f ~/.kube/config ]; then
+              if [ ! -d /home/ubuntu/.ansible ]; then
                 sudo bash -c
                 set -e  # Exit on any error
                 echo 'Updating package lists...'

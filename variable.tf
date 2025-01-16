@@ -20,7 +20,7 @@ variable "workers-count" {
 }
 variable "instance-type" {
   type    = string
-  default = "t3.2xlarge"
+  default = "t2.micro"
 }
 variable "instance-type-master" {
   type    = string
